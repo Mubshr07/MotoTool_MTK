@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Incrypt.qss</file>
+        <file>checkBox.png</file>
+        <file>dropDown.png</file>
+        <file>pics/banner.png</file>
+        <file>pics/logo round.png</file>
+        <file>pics/portrait.png</file>
+        <file>pics/appIcon.ico</file>
+    </qresource>
+</RCC>
