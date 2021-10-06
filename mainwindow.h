@@ -173,6 +173,8 @@ private slots:
 
     void on_chk_Manual_IMEI_SPD_stateChanged(int arg1);
 
+    void on_pb_FRP_SPD_clicked();
+
 private:
     Ui::MainWindow *ui;
     void initializeObjectsAndStartThread();

@@ -3174,6 +3174,13 @@ padding-right:10px;</string>
               </widget>
              </item>
              <item>
+              <widget class="QPushButton" name="pb_FRP_SPD">
+               <property name="text">
+                <string>FRP fastBoot</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QPushButton" name="pb_CopytoClipBoard_SPD">
                <property name="text">
                 <string>Copy to ClipBoard</string>

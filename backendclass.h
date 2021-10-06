@@ -46,9 +46,11 @@ private:
     QString cmdShellPath =  "C:/windows/system32/cmd.exe";
     QString m3FolderPath = QString(QDir::currentPath() + "/M3");
     QString adbFolderPath = QString(QDir::currentPath() + "/ADB");
+
     QString ChinoeIMEICMToolFolderPath_Data1 = QString(QDir::currentPath() + "/DATA/DATA1");
     QString ChinoeIMEICMToolFolderPath_Data2 = QString(QDir::currentPath() + "/DATA/DATA2");
     QString ChinoeIMEICMToolFolderPath_Data3 = QString(QDir::currentPath() + "/DATA/DATA3");
+    QString fastBootFolderPath = QString(QDir::currentPath() + "/DATA/fastboot");
 
     //1. "E6I"
     QString simUnLock_E6I = QString(QDir::currentPath() +"/DATA/DATA1/e6isimlock/fijisc_mexico.att.bin");
@@ -74,9 +76,16 @@ private:
 
     void getConnectedDevices_andSendThemGUI(QByteArray ba);
     bool getServerIMEInumber_updateGlobal();
+    bool getServerFastBoot_File();
     QVector<QString> adbDevicesRaw;
     bool adbDeviceDetectedandAuthorized = false;
 
+    QString frp_ProdName = "", frp_uniqID = "";
+    QByteArray frp_PassWord;
+    bool frp_infoCompleted = false;
+    int frpInfoIndex = 0;
+    QString fastBoot_FileName ;
+    QString frp_DeviceID = "";
     void getADB_Model(QByteArray ba);
     void getADB_AndroidVersion(QByteArray ba);
     void getADB_BuildDate(QByteArray ba);
@@ -89,6 +98,14 @@ private:
     void get_ChinoeDirectory2(QByteArray ba);
     void get_ChinoeDirectory3(QByteArray ba);
 
+
+    void get_FRP_GetServerFile(QByteArray ba);
+    void get_FRP_PushFile(QByteArray ba);
+    void get_FRP_FastBootErase(QByteArray ba);
+    void get_FRP_Fast_Reboot(QByteArray ba);
+
+
+    void getFastBoot_info(QByteArray ba);
 
     void getADB_UnLockSIMTool(QByteArray ba);
     bool nowForSecondIMEI = false;

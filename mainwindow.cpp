@@ -431,7 +431,7 @@ void MainWindow::rx_TextBoxOutput(TOOL_TYPE tool, int idx, QString s, bool isBol
         }
         }
     }
-    else if(tool==Tool_SPD || tool==Tool_UnLock){
+    else if(tool==Tool_SPD || tool==Tool_UnLock|| tool==Tool_SPD_FRP_FastBoot){
         if(newline) ui->txt_outPut_SPD->append("\n");
         ui->txt_outPut_SPD->setTextColor(color);
         if(isBold) ui->txt_outPut_SPD->setFontWeight(QFont::Bold);
@@ -1888,3 +1888,20 @@ void MainWindow::on_chk_Manual_IMEI_SPD_stateChanged(int arg1)
         ui->txt_IMEI_1_SPD->setEnabled(GlobalVars::spd_manual_imei_bool);
     }
 }
+
+void MainWindow::on_pb_FRP_SPD_clicked()
+{
+    ui->txt_outPut_SPD->clear();
+
+    //if(checkAllOk4spdTool())
+    {
+        emit tx_StartRepairing(15179, true, Tool_SPD_FRP_FastBoot);
+
+        ui->pb_Stop_SPD->setEnabled(true);
+        ui->pb_StartRepair_SPD->setEnabled(false);
+        ui->pb_CopytoClipBoard_SPD->setEnabled(false);
+        ui->pb_CheckADB_Devices->setEnabled(false);
+        ui->pb_unLock_SPD->setEnabled(false);
+    }
+}
+

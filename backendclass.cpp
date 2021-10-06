@@ -27,50 +27,6 @@ BackEndClass::BackEndClass(QObject *parent) : QObject(parent)
     //qDebug()<<" M3: "<<m3FolderPath;
     //qDebug()<<" ADB: "<<adbFolderPath;
 
-    /*
-    int currentProcessIndx = 0;
-    metaProcess[currentProcessIndx] = new QProcess(this); metaProcess[currentProcessIndx]->setProgram(cmdShellPath); metaProcess[currentProcessIndx]->setWorkingDirectory(m3FolderPath);
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardOutput()), this, SLOT(rx_CommandLine_OutPut_Device_1()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardError()), this, SLOT(rx_CommandLine_Error_Device_1()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(rx_CommandLine_Error_Device_1()));
-    currentProcessIndx = 1;
-    metaProcess[currentProcessIndx] = new QProcess(this); metaProcess[currentProcessIndx]->setProgram(cmdShellPath); metaProcess[currentProcessIndx]->setWorkingDirectory(m3FolderPath);
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardOutput()), this, SLOT(rx_CommandLine_OutPut_Device_2()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardError()), this, SLOT(rx_CommandLine_Error_Device_2()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(rx_CommandLine_Error_Device_2()));
-    currentProcessIndx = 2;
-    metaProcess[currentProcessIndx] = new QProcess(this); metaProcess[currentProcessIndx]->setProgram(cmdShellPath); metaProcess[currentProcessIndx]->setWorkingDirectory(m3FolderPath);
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardOutput()), this, SLOT(rx_CommandLine_OutPut_Device_3()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardError()), this, SLOT(rx_CommandLine_Error_Device_3()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(rx_CommandLine_Error_Device_3()));
-    currentProcessIndx = 3;
-    metaProcess[currentProcessIndx] = new QProcess(this); metaProcess[currentProcessIndx]->setProgram(cmdShellPath); metaProcess[currentProcessIndx]->setWorkingDirectory(m3FolderPath);
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardOutput()), this, SLOT(rx_CommandLine_OutPut_Device_4()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardError()), this, SLOT(rx_CommandLine_Error_Device_4()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(rx_CommandLine_Error_Device_4()));
-    currentProcessIndx = 4;
-    metaProcess[currentProcessIndx] = new QProcess(this); metaProcess[currentProcessIndx]->setProgram(cmdShellPath); metaProcess[currentProcessIndx]->setWorkingDirectory(m3FolderPath);
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardOutput()), this, SLOT(rx_CommandLine_OutPut_Device_5()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardError()), this, SLOT(rx_CommandLine_Error_Device_5()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(rx_CommandLine_Error_Device_5()));
-    currentProcessIndx = 5;
-    metaProcess[currentProcessIndx] = new QProcess(this); metaProcess[currentProcessIndx]->setProgram(cmdShellPath); metaProcess[currentProcessIndx]->setWorkingDirectory(m3FolderPath);
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardOutput()), this, SLOT(rx_CommandLine_OutPut_Device_6()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardError()), this, SLOT(rx_CommandLine_Error_Device_6()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(rx_CommandLine_Error_Device_6()));
-    currentProcessIndx = 6;
-    metaProcess[currentProcessIndx] = new QProcess(this); metaProcess[currentProcessIndx]->setProgram(cmdShellPath); metaProcess[currentProcessIndx]->setWorkingDirectory(m3FolderPath);
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardOutput()), this, SLOT(rx_CommandLine_OutPut_Device_7()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardError()), this, SLOT(rx_CommandLine_Error_Device_7()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(rx_CommandLine_Error_Device_7()));
-    currentProcessIndx = 7;
-    metaProcess[currentProcessIndx] = new QProcess(this); metaProcess[currentProcessIndx]->setProgram(cmdShellPath); metaProcess[currentProcessIndx]->setWorkingDirectory(m3FolderPath);
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardOutput()), this, SLOT(rx_CommandLine_OutPut_Device_8()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(readyReadStandardError()), this, SLOT(rx_CommandLine_Error_Device_8()));
-    connect(metaProcess[currentProcessIndx], SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(rx_CommandLine_Error_Device_8()));
-    */
-
-
 
 
     adbProcess = new QProcess(this);
@@ -101,7 +57,7 @@ void BackEndClass::rx_StartRepairing(int idx, bool startStop, TOOL_TYPE tool)
         actualADBcommands = false;
         singleShotIndex = 1;
 
-        if(!getServerIMEInumber_updateGlobal()) return;
+        if(currentToolType != Tool_SPD_FRP_FastBoot) if(!getServerIMEInumber_updateGlobal()) return;
 
 
 
@@ -131,16 +87,24 @@ void BackEndClass::rx_StartRepairing(int idx, bool startStop, TOOL_TYPE tool)
             emit tx_TextBoxOutput(Tool_SPD, 1, "Start process Write ADB ImeI: OK", false, false, GlobalVars::txtOutPutColor);
         else if(currentToolType == Tool_UnLock)
             emit tx_TextBoxOutput(Tool_UnLock, 1, "Start process UnLOCK: OK", false, false, GlobalVars::txtOutPutColor);
+        else if(currentToolType == Tool_SPD_FRP_FastBoot)
+            emit tx_TextBoxOutput(Tool_SPD_FRP_FastBoot, 1, "Start process FastBoot: OK", false, false, GlobalVars::txtOutPutColor);
 
         adbProcess->setWorkingDirectory(adbFolderPath);
-        spd_commandStr = "adb devices";
+        if(currentToolType ==  Tool_SPD_FRP_FastBoot)
+        {
+            spd_commandStr = "fastboot devices";
+        } else {
+            spd_commandStr = "adb devices";
+        }
+
         shellArguments.clear();
         shellArguments.append("/C");
         shellArguments.append(spd_commandStr);
         adbProcess->close();
         adbProcess->waitForReadyRead(1000);
         adbProcess->setArguments(shellArguments);
-        //qDebug()<<" Arg::"<<shellArguments;
+        qDebug()<<" Arg::"<<shellArguments;
         currentADB = ADB_ConnectedDevice;
         adbProcess->start();
         //qDebug()<<"\n\n \t Process Opening: "<<adbProcess->open(QIODevice::ReadWrite);
@@ -223,8 +187,18 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
     case ADB_Idle: break;
     case ADB_ConnectedDevice: break;
     case  ADB_Model: {
-        processStartStop = true;
-        spd_commandStr = "adb shell getprop ro.product.vendor.model";
+        if(currentToolType == Tool_SPD_FRP_FastBoot){
+            switch (frpInfoIndex) {
+            case 0: spd_commandStr = "fastboot getvar has-slot:frp"; break;
+            case 1: spd_commandStr = "fastboot getvar ro.boot.hardware.sku"; break;
+            case 2: spd_commandStr = "fastboot getvar version-bootloader"; break;
+            case 3: spd_commandStr = "fastboot getvar product_name"; break;
+            case 4: spd_commandStr = "fastboot getvar unlock_raw_data"; break;
+            }
+
+        } else {
+            spd_commandStr = "adb shell getprop ro.product.vendor.model";
+        }
         shellArguments.clear();
         shellArguments.append("/C");
         shellArguments.append(spd_commandStr);
@@ -234,11 +208,11 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
         //adbProcess->start();
         //qDebug()<<" Model : command: "<<spd_commandStr;
         adbProcess->open(QIODevice::ReadWrite);
-        if (adbProcess->waitForStarted(1000) == false)
+        if (adbProcess->waitForStarted(2000) == false)
             qDebug() << "Error starting external program";
         else
             qDebug()<< "external program running";
-        adbProcess->waitForFinished(1000);
+        adbProcess->waitForFinished(3000);
         break;
     }
     case  ADB_AndroidVersion:{
@@ -385,9 +359,11 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
 
             nowForSecondIMEI = true;
             if(GlobalVars::spd_dual_imei_bool){
-                spd_commandStr = QString("WriteIMEIToolV1.1.exe -cTSDCLogin dfs,Dfs@2021dfs -cConnect -cReadTrackId -cReadIMEI1 -cWriteIMEI1 "+GlobalVars::spd_imei_1+"  -cLog -E");
-            }else{
                 spd_commandStr = QString("WriteIMEIToolV1.1.exe -cTSDCLogin dfs,Dfs@2021dfs -cConnect -cWriteIMEI1 "+GlobalVars::spd_imei_1+" -cWriteIMEI2 "+GlobalVars::spd_imei_2+" -cReadTrackId -cReadIMEI1 -cReadIMEI2  -cLog -E");
+            }else{
+
+                spd_commandStr = QString("WriteIMEIToolV1.1.exe -cTSDCLogin dfs,Dfs@2021dfs -cConnect -cReadTrackId -cReadIMEI1 -cWriteIMEI1 "+GlobalVars::spd_imei_1+"  -cLog -E");
+                //spd_commandStr = QString("WriteIMEIToolV1.1.exe -cTSDCLogin dfs,Dfs@2021dfs -cConnect -cWriteIMEI1 "+GlobalVars::spd_imei_1+" -cWriteIMEI2 "+GlobalVars::spd_imei_2+" -cReadTrackId -cReadIMEI1 -cReadIMEI2  -cLog -E");
             }
         }
 
@@ -457,6 +433,64 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
         break;
     }
     case ADB_verify: break;
+    case ADB_FRP_GetServerFile:{
+        getServerFastBoot_File();
+        break;
+    }
+    case ADB_FRP_PushFile:{
+        spd_commandStr = QString("fastboot.exe  signature "+fastBoot_FileName+" oem passwd "+frp_PassWord+" returned in dbs");
+        shellArguments.clear();
+        shellArguments.append("/C");
+        shellArguments.append(spd_commandStr);
+        adbProcess->close();
+        adbProcess->waitForReadyRead(1000);
+        adbProcess->setArguments(shellArguments);
+        //adbProcess->start();
+        qDebug()<<" PushFile: command: "<<spd_commandStr;
+        adbProcess->open(QIODevice::ReadWrite);
+        if (adbProcess->waitForStarted(1000) == false)
+            qDebug() << "Error starting external program";
+        else
+            qDebug()<< "external program running";
+        adbProcess->waitForFinished(1000);
+        break;
+    }
+    case ADB_FRP_FastBootErase:{
+        spd_commandStr = QString("fastboot erase frp");
+        shellArguments.clear();
+        shellArguments.append("/C");
+        shellArguments.append(spd_commandStr);
+        adbProcess->close();
+        adbProcess->waitForReadyRead(1000);
+        adbProcess->setArguments(shellArguments);
+        //adbProcess->start();
+        qDebug()<<" FRP Erase: command: "<<spd_commandStr;
+        adbProcess->open(QIODevice::ReadWrite);
+        if (adbProcess->waitForStarted(1000) == false)
+            qDebug() << "Error starting external program";
+        else
+            qDebug()<< "external program running";
+        adbProcess->waitForFinished(1000);
+        break;
+    }
+    case ADB_FRP_Fast_Reboot:{
+        spd_commandStr = QString("fastboot reboot");
+        shellArguments.clear();
+        shellArguments.append("/C");
+        shellArguments.append(spd_commandStr);
+        adbProcess->close();
+        adbProcess->waitForReadyRead(1000);
+        adbProcess->setArguments(shellArguments);
+        //adbProcess->start();
+        qDebug()<<" FRP Reboot: command: "<<spd_commandStr;
+        adbProcess->open(QIODevice::ReadWrite);
+        if (adbProcess->waitForStarted(1000) == false)
+            qDebug() << "Error starting external program";
+        else
+            qDebug()<< "external program running";
+        adbProcess->waitForFinished(1000);
+        break;
+    }
     }
 }
 
@@ -489,6 +523,12 @@ void BackEndClass::rx_ADB_OutPutReceived()
     case ADB_ChinoeIMEICMTool: getADB_ChinoeIMEICMTool(spd_commandlineOutPut.toUtf8()); break;
     case ADB_UnLockSIM: getADB_UnLockSIMTool(spd_commandlineOutPut.toUtf8());  break;
     case ADB_verify: break;
+
+    case ADB_FRP_GetServerFile: get_FRP_GetServerFile(spd_commandlineOutPut.toUtf8()); break;
+    case ADB_FRP_PushFile: get_FRP_PushFile(spd_commandlineOutPut.toUtf8());  break;
+    case ADB_FRP_FastBootErase: get_FRP_FastBootErase(spd_commandlineOutPut.toUtf8());  break;
+    case ADB_FRP_Fast_Reboot: get_FRP_Fast_Reboot(spd_commandlineOutPut.toUtf8());  break;
+
     }
 
 }
@@ -502,52 +542,93 @@ void BackEndClass::getConnectedDevices_andSendThemGUI(QByteArray ba)
     QString deviceID ="";
     QString authorized ="";
     adbDeviceDetectedandAuthorized = false;
-    if(ba.contains("List of devices attached")){
-        adbDevicesRaw.clear();
-        endlineIndx = ba.indexOf("\n");
-        ba = ba.right(ba.length()-(endlineIndx+1));
-        //qDebug()<<" New bytes: "<<ba;
-        tabIndx = ba.indexOf("\t");
-        deviceID = ba.left(tabIndx);
 
-        ba.remove(0, tabIndx+1);
-        endlineIndx = ba.indexOf("\r\n");
-        authorized = ba.left(endlineIndx);
-        if(authorized == "device"){
-            adbDevicesRaw.append(deviceID);
-            emit tx_miscOperations(Tool_SPD, 11, deviceNumber, deviceID);
-            emit tx_TextBoxOutput(Tool_SPD, 1, "Start process Read Info : OK", false, false, GlobalVars::txtOutPutColor);
-            emit tx_TextBoxOutput(Tool_SPD, 1, "Processing ", false, false, GlobalVars::txtOutPutColor);
-            emit tx_TextBoxOutput(Tool_SPD, 1,"Getting Authorization From Server: OK ", false, false, GlobalVars::txtOutPutColor);
-            adbDeviceDetectedandAuthorized = true;
+    if(currentToolType == Tool_SPD_FRP_FastBoot){
+        frp_infoCompleted = false;
+        frpInfoIndex = 0;
+        if(ba.contains("fastboot")){
+            endlineIndx = ba.indexOf(" ");
+            frp_DeviceID = ba.left(endlineIndx);
+            ba = ba.right(ba.length()-(endlineIndx+1));
+            //qDebug()<<" New bytes: "<<ba;
+            endlineIndx = ba.indexOf("\r\n");
+            authorized = ba.left(endlineIndx);
+            if(authorized == "fastboot"){
+                emit tx_TextBoxOutput(currentToolType, 1, "Start process Read Info : OK", false, false, GlobalVars::txtOutPutColor);
+                emit tx_TextBoxOutput(currentToolType, 1, "Processing ", false, false, GlobalVars::txtOutPutColor);
+                //emit tx_TextBoxOutput(currentToolType, 1,"Getting Authorization From Server: OK ", false, false, GlobalVars::txtOutPutColor);
+                adbDeviceDetectedandAuthorized = true;
+            }
+            else if(authorized =="unauthorized")
+            {
+                adbDevicesRaw.clear();
+                emit tx_TextBoxOutput(Tool_SPD, 1, "Device is not authorized. Please enable the usb debuging mode.", false, false, Qt::red);
+                emit tx_miscOperations(Tool_SPD,1, 100, "");
+                adbProcess->reset();
+            }
+            currentADB = ADB_Model;
+            singleShotIndex=1;
+            timer_SPDTool->start(500);
+            emit tx_miscOperations(currentToolType, 1, 15, "");
         }
-        else if(authorized =="unauthorized")
-        {
+    } else {
+        if(ba.contains("List of devices attached")){
             adbDevicesRaw.clear();
-            emit tx_TextBoxOutput(Tool_SPD, 1, "Device is not authorized. Please enable the usb debuging mode.", false, false, Qt::red);
-            emit tx_miscOperations(Tool_SPD,1, 100, "");
-            adbProcess->reset();
+            endlineIndx = ba.indexOf("\n");
+            ba = ba.right(ba.length()-(endlineIndx+1));
+            //qDebug()<<" New bytes: "<<ba;
+            tabIndx = ba.indexOf("\t");
+            deviceID = ba.left(tabIndx);
+
+            ba.remove(0, tabIndx+1);
+            endlineIndx = ba.indexOf("\r\n");
+            authorized = ba.left(endlineIndx);
+            if(authorized == "device"){
+                adbDevicesRaw.append(deviceID);
+                emit tx_miscOperations(Tool_SPD, 11, deviceNumber, deviceID);
+                emit tx_TextBoxOutput(Tool_SPD, 1, "Start process Read Info : OK", false, false, GlobalVars::txtOutPutColor);
+                emit tx_TextBoxOutput(Tool_SPD, 1, "Processing ", false, false, GlobalVars::txtOutPutColor);
+                emit tx_TextBoxOutput(Tool_SPD, 1,"Getting Authorization From Server: OK ", false, false, GlobalVars::txtOutPutColor);
+                adbDeviceDetectedandAuthorized = true;
+            }
+            else if(authorized =="unauthorized")
+            {
+                adbDevicesRaw.clear();
+                emit tx_TextBoxOutput(Tool_SPD, 1, "Device is not authorized. Please enable the usb debuging mode.", false, false, Qt::red);
+                emit tx_miscOperations(Tool_SPD,1, 100, "");
+                adbProcess->reset();
+            }
+
+
+            currentADB = ADB_Model;
+            singleShotIndex=1;
+            timer_SPDTool->start(500);
+            emit tx_miscOperations(currentToolType, 1, 15, "");
         }
-
-
-        currentADB = ADB_Model;
-        singleShotIndex=1;
-        timer_SPDTool->start(500);
-        emit tx_miscOperations(Tool_SPD, 1, 10, "");
-    }
-    else
-    {
-        emit tx_TextBoxOutput(Tool_SPD, 1, "Error in Finding Devices, Please re-Plug the device \n ---------------------------------", false, false, Qt::red);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "");
+        else
+        {
+            emit tx_TextBoxOutput(currentToolType, 1, "Error in Finding Devices, Please re-Plug the device \n ---------------------------------", false, false, Qt::red);
+            emit tx_miscOperations(currentToolType, 1, 100, "");
+        }
     }
 }
 void BackEndClass::getADB_Model(QByteArray ba)
 {
     //qDebug()<<"getADB_Model::  "<<ba;
-    emit tx_TextBoxOutput(Tool_SPD, 1, QString("Model: "+ba), false, false, GlobalVars::txtOutPutColor);
-    currentADB = ADB_AndroidVersion;
-    timer_SPDTool->start(500);
-    emit tx_miscOperations(Tool_SPD, 1, 20, "");
+    if(currentToolType == Tool_SPD_FRP_FastBoot){
+        getFastBoot_info(ba);
+        if(frp_infoCompleted){
+        currentADB =  ADB_FRP_GetServerFile;
+        timer_SPDTool->start(500);
+        emit tx_miscOperations(Tool_SPD, 1, 25, "");
+        }
+
+    } else {
+        emit tx_TextBoxOutput(Tool_SPD, 1, QString("Model: "+ba), false, false, GlobalVars::txtOutPutColor);
+        currentADB = ADB_AndroidVersion;
+        timer_SPDTool->start(500);
+        emit tx_miscOperations(Tool_SPD, 1, 20, "");
+    }
 }
 void BackEndClass::getADB_AndroidVersion(QByteArray ba)
 {
@@ -621,14 +702,14 @@ void BackEndClass::getADB_AssignPortCmd(QByteArray ba)
 
 
     emit tx_TextBoxOutput(Tool_SPD, 1, ba, false, false, GlobalVars::txtOutPutColor);
-     if(adb_InfoOnly == false){
-         currentADB = ADB_ChinoeIMEICMTool;
-         timer_SPDTool->start(1500);
-         emit tx_miscOperations(Tool_SPD, 1,  80, "");
-     }
-     else {
-            emit tx_miscOperations(Tool_SPD, 1, 100, "");
-     }
+    if(adb_InfoOnly == false){
+        currentADB = ADB_ChinoeIMEICMTool;
+        timer_SPDTool->start(1500);
+        emit tx_miscOperations(Tool_SPD, 1,  80, "");
+    }
+    else {
+        emit tx_miscOperations(Tool_SPD, 1, 100, "");
+    }
 }
 void BackEndClass::getADB_Original_imei(QByteArray ba)
 {
@@ -764,9 +845,9 @@ void BackEndClass::get_ChinoeDirectory1(QByteArray ba)
     qDebug()<<" Left over info: "<<ba;
     if(ba.contains("Work don")){
 
-            if(!nowForSecondIMEI && GlobalVars::spd_dual_imei_bool){
-                nowForSecondIMEI = true; timer_SPDTool->start(1000);
-            }
+        if(!nowForSecondIMEI && GlobalVars::spd_dual_imei_bool){
+            nowForSecondIMEI = true; timer_SPDTool->start(1000);
+        }
         if(GlobalVars::spd_dual_imei_bool == false) nowForSecondIMEI = true;
 
         //if(timer_singleShot->isActive()) qDebug()<<" QTimer is started Again: "<<nowForSecondIMEI<<"  Dual IMEI: "<<GlobalVars::dual_imei_bool;
@@ -801,9 +882,9 @@ void BackEndClass::get_ChinoeDirectory2(QByteArray ba)
     emit tx_TextBoxOutput(Tool_SPD, 1, QString("Tool: "+sendToGUI), false, false, GlobalVars::txtOutPutColor);
     qDebug()<<" Left over info: "<<ba;
     if(ba.contains("Work don")){
-            if(!nowForSecondIMEI && GlobalVars::spd_dual_imei_bool){
-                nowForSecondIMEI = true; timer_SPDTool->start(1000);
-            }
+        if(!nowForSecondIMEI && GlobalVars::spd_dual_imei_bool){
+            nowForSecondIMEI = true; timer_SPDTool->start(1000);
+        }
         if(GlobalVars::spd_dual_imei_bool == false) nowForSecondIMEI = true;
 
         //if(timer_singleShot->isActive()) qDebug()<<" QTimer is started Again: "<<nowForSecondIMEI<<"  Dual IMEI: "<<GlobalVars::dual_imei_bool;
@@ -825,55 +906,142 @@ void BackEndClass::get_ChinoeDirectory2(QByteArray ba)
 void BackEndClass::get_ChinoeDirectory3(QByteArray ba)
 {
     qDebug()<<"***************************************\n\n \t G20 Dir-3: "<<ba<<"\n***************************************";
-
-    int indx = ba.indexOf("[ Start Test ]");
-    ba = ba.right(ba.length() - indx);
-    qDebug()<<"\n\n \t actual Bytes Dir-3: "<<ba;
-    indx=0;
-    indx = ba.indexOf("Backup ");
-    if(indx <3) indx = ba.indexOf("\r\nWork don");
-    QString sendToGUI = ba.left(indx);
-    sendToGUI.replace("\r", "");
-    sendToGUI = sendToGUI.left(sendToGUI.length()-2);
-    qDebug()<<"\n\n \t sendToGUI: "<<sendToGUI;
-    emit tx_TextBoxOutput(Tool_SPD, 1, QString("Tool: "+sendToGUI), false, false, GlobalVars::txtOutPutColor);
-    qDebug()<<" Left over info: "<<ba;
-    if(ba.contains("Work don")){
-
-        //qDebug()<<" Dual IMEI: "<<GlobalVars::dual_imei_bool;
-        if(GlobalVars::spd_modelStr.contains("E6I")||GlobalVars::spd_modelStr.contains("E7I")) {
-            if(!nowForSecondIMEI && GlobalVars::spd_dual_imei_bool){
-                nowForSecondIMEI = true; timer_SPDTool->start(1000);
-            }
-        }
-        else if(GlobalVars::spd_modelStr.contains("E6s XT2053")||GlobalVars::spd_modelStr.contains("G8 Power Lite XT2055")||GlobalVars::spd_modelStr.contains("E7 Play XT2095")) {
-            if(!nowForSecondIMEI && GlobalVars::spd_dual_imei_bool){
-                nowForSecondIMEI = true; timer_SPDTool->start(1000);
-            }
-        }
-        else if(GlobalVars::spd_modelStr.contains("G20")) {
-
-        }
-
-        if(GlobalVars::spd_dual_imei_bool == false) nowForSecondIMEI = true;
-
-        //if(timer_singleShot->isActive()) qDebug()<<" QTimer is started Again: "<<nowForSecondIMEI<<"  Dual IMEI: "<<GlobalVars::dual_imei_bool;
-        //else qDebug()<<" QTimer is not Active : "<<nowForSecondIMEI<<"  Dual IMEI: "<<GlobalVars::dual_imei_bool;
-
-
-        if(nowForSecondIMEI){
-            emit tx_TextBoxOutput(Tool_SPD, 1, "Task successfuly Completed", false, false, GlobalVars::txtOutPutColor);
-            emit tx_miscOperations(Tool_SPD, 1, 100, "");
-        }
-        else
-        {
-            emit tx_TextBoxOutput(Tool_SPD, 1,"Task IMEI-1 Completed.", false, false, GlobalVars::txtOutPutColor);
-            emit tx_TextBoxOutput(Tool_SPD, 1,"Writing IMEI-2: wait.", true, false, Qt::white);
-            emit tx_miscOperations(Tool_SPD, 1, 75, "");
-        }
+    int indx = 0;
+    QString required_data = "";
+    if(ba.contains("Read TrackId ="))
+    {
+        // removing all text from start to this string
+        indx = ba.indexOf("Read TrackId =");
+        ba = ba.right(ba.length() - indx);
+        // removing all with =
+        indx = ba.indexOf("=");
+        ba = ba.right(ba.length() - (indx+1));
+        // finding , after Track id
+        indx = ba.indexOf(",");
+        required_data = ba.left(indx);
+        emit tx_TextBoxOutput(Tool_SPD, 1, QString(" Tracking ID: "+ required_data), false, false, GlobalVars::txtOutPutColor);
     }
+    if(ba.contains("Total Test Result = PASS"))
+    {
+        emit tx_TextBoxOutput(Tool_SPD, 1, "Task successfuly Completed", false, false, GlobalVars::txtOutPutColor);
+        emit tx_miscOperations(Tool_SPD, 1, 100, "");
+    }
+    else if(ba.contains("Total Test Result = FAIL"))
+    {
+        emit tx_TextBoxOutput(Tool_SPD, 1, "Test Result Failed", false, false, Qt::red);
+        emit tx_miscOperations(Tool_SPD, 1, 100, "");
+    }
+    else if(ba.contains("Connect To cellphone = Fail"))
+    {
+        emit tx_TextBoxOutput(Tool_SPD, 1, "Connect To cellphone = Fail", false, false, Qt::red);
+        emit tx_miscOperations(Tool_SPD, 1, 100, "");
+    }
+
 }
 
+
+void BackEndClass::getFastBoot_info(QByteArray ba)
+{
+    qDebug()<<"\n getFastBoot_info "<<ba;
+    //frp_ProdName = "";
+    //frp_uniqID = "";
+    int idx = 0;
+    QString requiredData = "";
+    // ---------- FRP ------------
+    if(ba.contains("has-slot:frp:")){
+        idx = ba.indexOf("has-slot:frp:");
+        ba = ba.right(ba.length() - idx);
+        idx = ba.indexOf("frp:");
+        ba = ba.right(ba.length() - idx);
+        idx = ba.indexOf(":");
+        ba = ba.right(ba.length() - (idx+1));
+        qDebug()<<" aa :: "<<ba;
+        idx = ba.indexOf("\r\n");
+        requiredData = ba.left(idx);
+        emit tx_TextBoxOutput(currentToolType, 1,QString("FRP = "+ requiredData), false, false, GlobalVars::txtOutPutColor);
+    }
+    // ---------- Model ------------
+    if(ba.contains("ro.boot.hardware.sku:")){
+        idx = ba.indexOf("ro.boot.hardware.sku:");
+        ba = ba.right(ba.length() - idx);
+        idx = ba.indexOf(":");
+        ba = ba.right(ba.length() - (idx+1));
+        idx = ba.indexOf("\r\n");
+        requiredData = ba.left(idx);
+        emit tx_TextBoxOutput(currentToolType, 1,QString("Model = "+ requiredData), false, false, GlobalVars::txtOutPutColor);
+    }
+
+    // ---------- Android Version ------------
+    if(ba.contains("version-bootloader:")){
+        idx = ba.indexOf("version-bootloader:");
+        ba = ba.right(ba.length() - idx);
+        idx = ba.indexOf(":");
+        ba = ba.right(ba.length() - (idx+1));
+        idx = ba.indexOf("\r\n");
+        requiredData = ba.left(idx);
+        emit tx_TextBoxOutput(currentToolType, 1,QString("Android Version = "+ requiredData), false, false, GlobalVars::txtOutPutColor);
+    }
+
+    // ---------- Device product Name ------------
+    if(ba.contains("product_name:")){
+        idx = ba.indexOf("product_name:");
+        ba = ba.right(ba.length() - idx);
+        idx = ba.indexOf(":");
+        ba = ba.right(ba.length() - (idx+2));
+        idx = ba.indexOf("\r\n");
+        requiredData = ba.left(idx);
+        frp_ProdName = requiredData;
+        emit tx_TextBoxOutput(currentToolType, 1,QString("Product Name = "+ frp_ProdName), false, false, GlobalVars::txtOutPutColor);
+    }
+
+    // ---------- Device Unique ID ------------
+    if(ba.contains("unlock_raw_data:")){
+        idx = ba.indexOf("unlock_raw_data:");
+        ba = ba.right(ba.length() - idx);
+        idx = ba.indexOf(":");
+        ba = ba.right(ba.length() - (idx+2));
+        idx = ba.indexOf("\r\n");
+        requiredData = ba.left(idx);
+        frp_uniqID = requiredData;
+        frp_infoCompleted = true;
+        emit tx_TextBoxOutput(currentToolType, 1,QString("Device Unique ID = "+ requiredData), false, false, GlobalVars::txtOutPutColor);
+    }
+    else
+    {
+        frpInfoIndex++;
+        timer_SPDTool->start(300);
+    }
+
+}
+
+void BackEndClass::get_FRP_GetServerFile(QByteArray ba)
+{
+    qDebug()<<"get_FRP_GetServerFile::  "<<ba;
+
+    currentADB = ADB_FRP_PushFile;
+    timer_SPDTool->start(500);
+}
+void BackEndClass::get_FRP_PushFile(QByteArray ba)
+{
+    qDebug()<<"get_FRP_PushFile::  "<<ba;
+
+
+    currentADB = ADB_FRP_FastBootErase;
+    timer_SPDTool->start(500);
+}
+void BackEndClass::get_FRP_FastBootErase(QByteArray ba)
+{
+    qDebug()<<"get_FRP_FastBootErase::  "<<ba;
+
+
+    currentADB = ADB_FRP_Fast_Reboot;
+    timer_SPDTool->start(500);
+}
+void BackEndClass::get_FRP_Fast_Reboot(QByteArray ba)
+{
+    qDebug()<<"get_FRP_Fast_Reboot::  "<<ba;
+
+}
 
 
 void BackEndClass::getADB_UnLockSIMTool(QByteArray ba)
@@ -921,8 +1089,21 @@ void BackEndClass::rx_ADB_ErrorReceived()
         getADB_rebootCommand(spd_commandError.toUtf8());
     }
     if(spd_commandError.contains("adb.exe: no devices/emulators found")){
-        emit tx_TextBoxOutput(Tool_SPD, 1, spd_commandError, true, true, Qt::red);
+        emit tx_TextBoxOutput(Tool_SPD, 1, "No Device Found.", true, false, Qt::red);
         emit tx_miscOperations(Tool_SPD, 1, 100, "");
+    }
+
+    if(currentToolType == Tool_SPD_FRP_FastBoot)
+    {
+        switch (currentADB) {
+        case ADB_Model: getADB_Model(spd_commandError.toUtf8()); break;
+
+        case ADB_FRP_GetServerFile: get_FRP_GetServerFile(spd_commandError.toUtf8()); break;
+        case ADB_FRP_PushFile: get_FRP_PushFile(spd_commandError.toUtf8());  break;
+        case ADB_FRP_FastBootErase: get_FRP_FastBootErase(spd_commandError.toUtf8());  break;
+        case ADB_FRP_Fast_Reboot: get_FRP_Fast_Reboot(spd_commandError.toUtf8());  break;
+
+        }
     }
 }
 void BackEndClass::rx_updateADBdevices()
@@ -960,6 +1141,74 @@ void BackEndClass::rx_updateADBdevices()
 }
 
 
+
+
+
+
+bool BackEndClass::getServerFastBoot_File()
+{
+    QByteArray postdata;
+    postdata.append(QString("pname="+frp_ProdName).toUtf8());
+    postdata.append(QString("&cpuid="+frp_uniqID).toUtf8());
+
+    qDebug()<<" \n\n fastBoot ByteArray:"<<postdata; //<<" \n Encrypted: "<<encypted;
+    if(processStartStop ==  false){
+        return false;
+    }
+    QEventLoop loop;
+    QNetworkAccessManager nam;
+    QNetworkRequest req;
+    req.setUrl(QUrl("http://server51214110.ngrok.io/frp.php"));
+    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    //qDebug()<<"URL:: "<<req.url();
+    QNetworkReply *reply = nam.post(req, postdata);
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+    if(processStartStop ==  false){
+        return false;
+    }
+    emit tx_miscOperations(currentToolType, 1, 40, "");
+    emit tx_TextBoxOutput(currentToolType, 1, QString("Geting FastBoot data from Server: OK"), false, false, GlobalVars::txtOutPutColor);
+
+    QByteArray buffer = reply->readAll();
+    //qDebug()<<" reply:: "<<buffer;
+    reply->deleteLater();
+    if(processStartStop ==  false){
+        return false;
+    }
+    qDebug()<<"\n\n\n FastBoot response_data::"<<buffer;
+    qDebug()<<"\n\n";
+
+    if (buffer.contains("success"))
+    {
+        buffer.replace("success: ", "");
+        int idx = buffer.indexOf(":");
+        QByteArray fileBytes = buffer.left(idx);
+        frp_PassWord.clear();
+        frp_PassWord = buffer.right(buffer.length() - (idx+1));
+
+        fastBoot_FileName = QString (fastBootFolderPath+"/signature_"+ frp_PassWord);
+        qDebug()<<" FRP File Path: "<<fastBoot_FileName;
+        QFile frpF(fastBoot_FileName);
+        if(frpF.open(QIODevice::WriteOnly))
+        {
+            qDebug()<<" File Open ";
+            frpF.write(fileBytes);
+            frpF.close();
+
+            emit tx_miscOperations(currentToolType, 1, 40, "");
+            emit tx_TextBoxOutput(currentToolType, 1, QString("Server Response: OK"), false, false, GlobalVars::txtOutPutColor);
+        } else {
+            qDebug()<<" Error in Writing FastBoot File.";
+            emit tx_miscOperations(currentToolType, 1, 100, "");
+            emit tx_TextBoxOutput(currentToolType, 1, QString("Error in FastBoot File."), false, false, Qt::red);
+            return false;
+        }
+
+    }
+
+    return true;
+}
 
 
 bool BackEndClass::getServerIMEInumber_updateGlobal()

@@ -12,7 +12,8 @@ enum TOOL_TYPE{
     Tool_MTK,
     Tool_MTK_UnLock,
     Tool_SPD,
-    Tool_UnLock
+    Tool_UnLock,
+    Tool_SPD_FRP_FastBoot
 };
 enum ADB_Commands{
     ADB_Idle,
@@ -26,7 +27,11 @@ enum ADB_Commands{
     ADB_Reboot,
     ADB_ChinoeIMEICMTool,
     ADB_UnLockSIM,
-    ADB_verify
+    ADB_verify,
+    ADB_FRP_GetServerFile,
+    ADB_FRP_PushFile,
+    ADB_FRP_FastBootErase,
+    ADB_FRP_Fast_Reboot
 };
 
 
