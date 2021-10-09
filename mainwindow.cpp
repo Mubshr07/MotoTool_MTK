@@ -240,6 +240,7 @@ void MainWindow::on_pb_CheckADB_Devices_clicked()
         ui->pb_CopytoClipBoard_SPD->setEnabled(false);
         ui->pb_CheckADB_Devices->setEnabled(false);
         ui->pb_unLock_SPD->setEnabled(false);
+        ui->pb_FRP_SPD->setEnabled(false);
     }
 
 }
@@ -255,6 +256,7 @@ void MainWindow::on_pb_StartRepair_SPD_clicked()
         ui->pb_CopytoClipBoard_SPD->setEnabled(false);
         ui->pb_CheckADB_Devices->setEnabled(false);
         ui->pb_unLock_SPD->setEnabled(false);
+        ui->pb_FRP_SPD->setEnabled(false);
     }
     else
     {
@@ -273,6 +275,7 @@ void MainWindow::on_pb_unLock_SPD_clicked()
         ui->pb_CopytoClipBoard_SPD->setEnabled(false);
         ui->pb_CheckADB_Devices->setEnabled(false);
         ui->pb_unLock_SPD->setEnabled(false);
+        ui->pb_FRP_SPD->setEnabled(false);
     }
     else
     {
@@ -288,6 +291,7 @@ void MainWindow::on_pb_Stop_SPD_clicked()
     ui->pb_CopytoClipBoard_SPD->setEnabled(true);
     ui->pb_CheckADB_Devices->setEnabled(true);
     ui->pb_unLock_SPD->setEnabled(true);
+    ui->pb_FRP_SPD->setEnabled(true);
 
     emit tx_StartRepairing(15179, false, Tool_SPD);
 
@@ -352,7 +356,32 @@ void MainWindow::on_chk_Dual_IMEI_SPD_stateChanged(int arg1)
         ui->txt_IMEI_1_SPD->setEnabled(GlobalVars::spd_manual_imei_bool);
     }
 }
+void MainWindow::on_chk_Manual_IMEI_SPD_stateChanged(int arg1)
+{
+    GlobalVars::spd_manual_imei_bool= arg1;
+    if(GlobalVars::spd_dual_imei_bool){
+        ui->txt_IMEI_1_SPD->setEnabled(GlobalVars::spd_manual_imei_bool);
+        ui->txt_IMEI_2_SPD->setEnabled(GlobalVars::spd_manual_imei_bool);
+    }
+    else {
+        ui->txt_IMEI_1_SPD->setEnabled(GlobalVars::spd_manual_imei_bool);
+    }
+}
+void MainWindow::on_pb_FRP_SPD_clicked()
+{
+    ui->txt_outPut_SPD->clear();
 
+    //if(checkAllOk4spdTool())
+    {
+        emit tx_StartRepairing(15179, true, Tool_SPD_FRP_FastBoot);
+        ui->pb_Stop_SPD->setEnabled(true);
+        ui->pb_StartRepair_SPD->setEnabled(false);
+        ui->pb_CopytoClipBoard_SPD->setEnabled(false);
+        ui->pb_CheckADB_Devices->setEnabled(false);
+        ui->pb_unLock_SPD->setEnabled(false);
+        ui->pb_FRP_SPD->setEnabled(false);
+    }
+}
 
 // ---------------------- Public Slots -----------------------
 void MainWindow::rx_ProcessCompleted(int idx, bool complt)
@@ -480,6 +509,7 @@ void MainWindow::rx_miscOperations(TOOL_TYPE tool, int idx, int value, QString s
             ui->pb_CopytoClipBoard_SPD->setEnabled(true);
             ui->pb_CheckADB_Devices->setEnabled(true);
             ui->pb_unLock_SPD->setEnabled(true);
+            ui->pb_FRP_SPD->setEnabled(true);
 
             logger.writeToLog(ui->txt_outPut_SPD->toPlainText().toUtf8());
         }
@@ -613,6 +643,7 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
             ui->pb_CopytoClipBoard_D1->setEnabled(true);
             ui->pb_CheckSerialPorts_D1->setEnabled(true);
             ui->pb_unLock_D1->setEnabled(true);
+            ui->pb_carrierFix_D1->setEnabled(true);
             if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
             } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success" && GlobalVars::meta_unLock_bool[idx]) {
@@ -941,6 +972,7 @@ bool MainWindow::checkAllOk4MetaMode(int device)
         ui->pb_CopytoClipBoard_D1->setEnabled(false);
         ui->pb_CheckSerialPorts_D1->setEnabled(false);
         ui->pb_unLock_D1->setEnabled(false);
+        ui->pb_carrierFix_D1->setEnabled(false);
         break;
     }
     case 1: {
@@ -1168,6 +1200,7 @@ void MainWindow::on_pb_Stop_D1_clicked()
     ui->pb_CopytoClipBoard_D1->setEnabled(true);
     ui->pb_CheckSerialPorts_D1->setEnabled(true);
     ui->pb_unLock_D1->setEnabled(true);
+    ui->pb_carrierFix_D1->setEnabled(true);
     emit tx_StartRepairing_metaMode(metaTabUniversal, false, Tool_MTK);
     logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
 }
@@ -1872,36 +1905,48 @@ void MainWindow::on_chk_Manual_IMEI_D8_stateChanged(int arg1)
     }
 }
 
-
-
-
-
-
-void MainWindow::on_chk_Manual_IMEI_SPD_stateChanged(int arg1)
+// -------------------- MDM Check Box ------------------------
+void MainWindow::on_chk_mdm_D1_stateChanged(int arg1)
 {
-    GlobalVars::spd_manual_imei_bool= arg1;
-    if(GlobalVars::spd_dual_imei_bool){
-        ui->txt_IMEI_1_SPD->setEnabled(GlobalVars::spd_manual_imei_bool);
-        ui->txt_IMEI_2_SPD->setEnabled(GlobalVars::spd_manual_imei_bool);
-    }
-    else {
-        ui->txt_IMEI_1_SPD->setEnabled(GlobalVars::spd_manual_imei_bool);
-    }
+    GlobalVars::meta_MDM_bool[metaTabUniversal] = arg1;
+}
+void MainWindow::on_chk_mdm_D2_stateChanged(int arg1)
+{
+    GlobalVars::meta_MDM_bool[metaTabUniversal] = arg1;
+}
+void MainWindow::on_chk_mdm_D3_stateChanged(int arg1)
+{
+    GlobalVars::meta_MDM_bool[metaTabUniversal] = arg1;
+}
+void MainWindow::on_chk_mdm_D4_stateChanged(int arg1)
+{
+    GlobalVars::meta_MDM_bool[metaTabUniversal] = arg1;
+}
+void MainWindow::on_chk_mdm_D5_stateChanged(int arg1)
+{
+    GlobalVars::meta_MDM_bool[metaTabUniversal] = arg1;
+}
+void MainWindow::on_chk_mdm_D6_stateChanged(int arg1)
+{
+    GlobalVars::meta_MDM_bool[metaTabUniversal] = arg1;
+}
+void MainWindow::on_chk_mdm_D7_stateChanged(int arg1)
+{
+    GlobalVars::meta_MDM_bool[metaTabUniversal] = arg1;
+}
+void MainWindow::on_chk_mdm_D8_stateChanged(int arg1)
+{
+    GlobalVars::meta_MDM_bool[metaTabUniversal] = arg1;
 }
 
-void MainWindow::on_pb_FRP_SPD_clicked()
+
+
+// -------------------- META Mode Carrier Fix Button  ------------------------
+void MainWindow::on_pb_carrierFix_D1_clicked()
 {
-    ui->txt_outPut_SPD->clear();
-
-    //if(checkAllOk4spdTool())
-    {
-        emit tx_StartRepairing(15179, true, Tool_SPD_FRP_FastBoot);
-
-        ui->pb_Stop_SPD->setEnabled(true);
-        ui->pb_StartRepair_SPD->setEnabled(false);
-        ui->pb_CopytoClipBoard_SPD->setEnabled(false);
-        ui->pb_CheckADB_Devices->setEnabled(false);
-        ui->pb_unLock_SPD->setEnabled(false);
+    ui->txt_outPut_D1->clear();
+    if(checkAllOk4MetaMode(metaTabUniversal)){
+        emit tx_StartRepairing_metaMode(metaTabUniversal, true, Tool_META_CarrierFix);
     }
 }
 

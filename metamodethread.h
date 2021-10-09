@@ -71,6 +71,7 @@ private:
 
     void check_Repair_Cmd_outPut(QString str);
     void check_UnLock_Cmd_outPut(QString str);
+    void check_CarrierFix_Cmd_outPut(QString str);
 
 };
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>936</width>
-    <height>619</height>
+    <height>622</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -37,7 +37,7 @@
       </property>
       <property name="styleSheet">
        <string notr="true">#loginFrame {
-	border:2px solid green;
+	border:2px solid rgb(255, 153, 0);
 	border-radius:10px; 
 	background: url(:/pics/appIcon.ico) no-repeat center center fixed;
 	background-color:white;
@@ -420,7 +420,7 @@ QGroupBox{
        </size>
       </property>
       <property name="styleSheet">
-       <string notr="true">#processFrame {border:2px solid green;
+       <string notr="true">#processFrame {border:2px solid rgb(255, 153, 0);
 border-radius:10px; 
 }</string>
       </property>
@@ -499,11 +499,11 @@ padding-right:10px;</string>
           </sizepolicy>
          </property>
          <property name="currentIndex">
-          <number>2</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="tab_11">
           <attribute name="title">
-           <string>QCom Mode</string>
+           <string>Qcom Mode</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_17">
            <item>
@@ -638,13 +638,6 @@ padding-right:10px;</string>
                </property>
               </spacer>
              </item>
-             <item row="0" column="2">
-              <widget class="QPushButton" name="pb_unLock_FRP">
-               <property name="text">
-                <string>unLock</string>
-               </property>
-              </widget>
-             </item>
              <item row="0" column="5">
               <spacer name="horizontalSpacer_13">
                <property name="orientation">
@@ -661,10 +654,10 @@ padding-right:10px;</string>
                </property>
               </spacer>
              </item>
-             <item row="0" column="1">
-              <widget class="QPushButton" name="pb_StartRepair_FRP">
+             <item row="0" column="2">
+              <widget class="QPushButton" name="pb_unLock_FRP">
                <property name="text">
-                <string>Start Repair</string>
+                <string>Unlock SIM</string>
                </property>
               </widget>
              </item>
@@ -678,14 +671,21 @@ padding-right:10px;</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="1">
-              <widget class="QPushButton" name="pb_StartRepair_FRP_2">
+             <item row="0" column="1">
+              <widget class="QPushButton" name="pb_StartRepair_FRP">
                <property name="text">
-                <string>Switch to Factory</string>
+                <string>Repair IMEI</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="2">
+             <item row="1" column="1">
+              <widget class="QPushButton" name="pb_StartRepair_FRP_2">
+               <property name="text">
+                <string>Enabale Factory Mode</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="3">
               <widget class="QPushButton" name="pb_StartRepair_FRP_3">
                <property name="text">
                 <string>FRP / MDM</string>
@@ -717,7 +717,7 @@ padding-right:10px;</string>
               </sizepolicy>
              </property>
              <property name="currentIndex">
-              <number>6</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="tab_3">
               <attribute name="title">
@@ -726,13 +726,6 @@ padding-right:10px;</string>
               <layout class="QVBoxLayout" name="verticalLayout_15">
                <item>
                 <layout class="QGridLayout" name="gridLayout_19">
-                 <item row="3" column="1">
-                  <widget class="QPushButton" name="pb_StartRepairing_D1">
-                   <property name="text">
-                    <string>Start Repair</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="1" column="0">
                   <widget class="QLabel" name="label_43">
                    <property name="text">
@@ -743,13 +736,6 @@ padding-right:10px;</string>
                    </property>
                    <property name="wordWrap">
                     <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="2">
-                  <widget class="QPushButton" name="pb_unLock_D1">
-                   <property name="text">
-                    <string>UnLock</string>
                    </property>
                   </widget>
                  </item>
@@ -945,20 +931,6 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="2">
-                  <widget class="QCheckBox" name="chk_Dual_IMEI_D1">
-                   <property name="text">
-                    <string>Dual IMEI</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="3">
-                  <widget class="QCheckBox" name="chk_unLock_D1">
-                   <property name="text">
-                    <string>UnLock</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="2" column="4">
                   <widget class="QCheckBox" name="chk_Reboot_D1">
                    <property name="text">
@@ -966,10 +938,52 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
+                 <item row="2" column="0">
                   <widget class="QCheckBox" name="chk_manual_IMEI_D1">
                    <property name="text">
                     <string>Manual IMEI</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QCheckBox" name="chk_Dual_IMEI_D1">
+                   <property name="text">
+                    <string>Dual IMEI</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="2">
+                  <widget class="QCheckBox" name="chk_unLock_D1">
+                   <property name="text">
+                    <string>Unlock SIM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="3">
+                  <widget class="QCheckBox" name="chk_mdm_D1">
+                   <property name="text">
+                    <string>MDM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="2">
+                  <widget class="QPushButton" name="pb_unLock_D1">
+                   <property name="text">
+                    <string>Unlock SIM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="1">
+                  <widget class="QPushButton" name="pb_StartRepairing_D1">
+                   <property name="text">
+                    <string>Repair IMEI</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0">
+                  <widget class="QPushButton" name="pb_carrierFix_D1">
+                   <property name="text">
+                    <string>Carrier Fix</string>
                    </property>
                   </widget>
                  </item>
@@ -1196,20 +1210,6 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="1">
-                  <widget class="QPushButton" name="pb_StartRepairing_D2">
-                   <property name="text">
-                    <string>Start Repair</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="2">
-                  <widget class="QPushButton" name="pb_unLock_D2">
-                   <property name="text">
-                    <string>UnLock</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="3" column="4">
                   <widget class="QPushButton" name="pb_Stop_D2">
                    <property name="enabled">
@@ -1220,31 +1220,52 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="3">
-                  <widget class="QCheckBox" name="chk_unLock_D2">
+                 <item row="2" column="4">
+                  <widget class="QCheckBox" name="chk_Reboot_D2">
                    <property name="text">
-                    <string>Unlock</string>
+                    <string>Reboot</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="2">
-                  <widget class="QCheckBox" name="chk_Dual_IMEI_D2">
-                   <property name="text">
-                    <string>Dual IMEI</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
+                 <item row="2" column="0">
                   <widget class="QCheckBox" name="chk_manual_IMEI_D2">
                    <property name="text">
                     <string>Manual IMEI</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="4">
-                  <widget class="QCheckBox" name="chk_Reboot_D2">
+                 <item row="2" column="1">
+                  <widget class="QCheckBox" name="chk_Dual_IMEI_D2">
                    <property name="text">
-                    <string>Reboot</string>
+                    <string>Dual IMEI</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="2">
+                  <widget class="QCheckBox" name="chk_unLock_D2">
+                   <property name="text">
+                    <string>Unlock SIM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="3">
+                  <widget class="QCheckBox" name="chk_mdm_D2">
+                   <property name="text">
+                    <string>MDM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="2">
+                  <widget class="QPushButton" name="pb_unLock_D2">
+                   <property name="text">
+                    <string>Unlock SIM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0" colspan="2">
+                  <widget class="QPushButton" name="pb_StartRepairing_D2">
+                   <property name="text">
+                    <string>Repair IMEI</string>
                    </property>
                   </widget>
                  </item>
@@ -1276,6 +1297,44 @@ padding-right:10px;</string>
               <layout class="QVBoxLayout" name="verticalLayout_12">
                <item>
                 <layout class="QGridLayout" name="gridLayout_15">
+                 <item row="1" column="2">
+                  <widget class="QLabel" name="label_34">
+                   <property name="text">
+                    <string>Device Model:</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="wordWrap">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="txt_IMEI_D3_1">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>111111111111119</string>
+                   </property>
+                   <property name="maxLength">
+                    <number>15</number>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="3" column="3">
                   <widget class="QPushButton" name="pb_CopytoClipBoard_D3">
                    <property name="text">
@@ -1283,10 +1342,10 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_35">
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="label_33">
                    <property name="text">
-                    <string>IMEI 2:</string>
+                    <string>Serial Port:</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignCenter</set>
@@ -1335,43 +1394,26 @@ padding-right:10px;</string>
                    </item>
                   </widget>
                  </item>
-                 <item row="0" column="2">
-                  <widget class="QLabel" name="label_33">
+                 <item row="3" column="4">
+                  <widget class="QPushButton" name="pb_Stop_D3">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="text">
-                    <string>Serial Port:</string>
+                    <string>Stop</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_35">
+                   <property name="text">
+                    <string>IMEI 2:</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignCenter</set>
                    </property>
                    <property name="wordWrap">
                     <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_32">
-                   <property name="text">
-                    <string>IMEI 1:</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                   <property name="wordWrap">
-                    <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QPushButton" name="pb_StartRepairing_D3">
-                   <property name="text">
-                    <string>Start Repair</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="2">
-                  <widget class="QPushButton" name="pb_unLock_D3">
-                   <property name="text">
-                    <string>unLock</string>
                    </property>
                   </widget>
                  </item>
@@ -1400,10 +1442,10 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="2">
-                  <widget class="QLabel" name="label_34">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_32">
                    <property name="text">
-                    <string>Device Model:</string>
+                    <string>IMEI 1:</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignCenter</set>
@@ -1435,38 +1477,10 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="4">
-                  <widget class="QPushButton" name="pb_Stop_D3">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
+                 <item row="2" column="4">
+                  <widget class="QCheckBox" name="chk_Reboot_D3">
                    <property name="text">
-                    <string>Stop</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="txt_IMEI_D3_1">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>111111111111119</string>
-                   </property>
-                   <property name="maxLength">
-                    <number>15</number>
+                    <string>Reboot</string>
                    </property>
                   </widget>
                  </item>
@@ -1495,31 +1509,45 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="2">
+                 <item row="2" column="0">
+                  <widget class="QCheckBox" name="chk_manual_IMEI_D3">
+                   <property name="text">
+                    <string>Manual IMEI</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
                   <widget class="QCheckBox" name="chk_Dual_IMEI_D3">
                    <property name="text">
                     <string>Dual IMEI</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="3">
+                 <item row="2" column="2">
                   <widget class="QCheckBox" name="chk_unLock_D3">
                    <property name="text">
-                    <string>unLock</string>
+                    <string>Unlock SIM</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="4">
-                  <widget class="QCheckBox" name="chk_Reboot_D3">
+                 <item row="2" column="3">
+                  <widget class="QCheckBox" name="chk_mdm_D3">
                    <property name="text">
-                    <string>Reboot</string>
+                    <string>MDM</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
-                  <widget class="QCheckBox" name="chk_manual_IMEI_D3">
+                 <item row="3" column="2">
+                  <widget class="QPushButton" name="pb_unLock_D3">
                    <property name="text">
-                    <string>Manual IMEI</string>
+                    <string>Unlock SIM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0" colspan="2">
+                  <widget class="QPushButton" name="pb_StartRepairing_D3">
+                   <property name="text">
+                    <string>Repair IMEI</string>
                    </property>
                   </widget>
                  </item>
@@ -1718,20 +1746,6 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="1">
-                  <widget class="QPushButton" name="pb_StartRepairing_D4">
-                   <property name="text">
-                    <string>Start Repair</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="2">
-                  <widget class="QPushButton" name="pb_unLock_D4">
-                   <property name="text">
-                    <string>unLock</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="0" column="4">
                   <widget class="QPushButton" name="pb_CheckSerialPorts_D4">
                    <property name="sizePolicy">
@@ -1770,20 +1784,6 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="2">
-                  <widget class="QCheckBox" name="chk_Dual_IMEI_D4">
-                   <property name="text">
-                    <string>Dual IMEI</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="3">
-                  <widget class="QCheckBox" name="chk_unLock_D4">
-                   <property name="text">
-                    <string>unLock</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="2" column="4">
                   <widget class="QCheckBox" name="chk_Reboot_D4">
                    <property name="text">
@@ -1791,10 +1791,45 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
+                 <item row="2" column="0">
                   <widget class="QCheckBox" name="chk_manual_IMEI_D4">
                    <property name="text">
                     <string>Manual IMEI</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QCheckBox" name="chk_Dual_IMEI_D4">
+                   <property name="text">
+                    <string>Dual IMEI</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="2">
+                  <widget class="QCheckBox" name="chk_unLock_D4">
+                   <property name="text">
+                    <string>Unlock SIM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="3">
+                  <widget class="QCheckBox" name="chk_mdm_D4">
+                   <property name="text">
+                    <string>MDM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="2">
+                  <widget class="QPushButton" name="pb_unLock_D4">
+                   <property name="text">
+                    <string>Unlock SIM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0" colspan="2">
+                  <widget class="QPushButton" name="pb_StartRepairing_D4">
+                   <property name="text">
+                    <string>Repair IMEI</string>
                    </property>
                   </widget>
                  </item>
@@ -1870,13 +1905,6 @@ padding-right:10px;</string>
                    </property>
                    <property name="maxLength">
                     <number>15</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QPushButton" name="pb_StartRepairing_D5">
-                   <property name="text">
-                    <string>Start Repair</string>
                    </property>
                   </widget>
                  </item>
@@ -2028,13 +2056,6 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="2">
-                  <widget class="QPushButton" name="pb_unLock_D5">
-                   <property name="text">
-                    <string>unLock</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="3" column="5">
                   <widget class="QPushButton" name="pb_Stop_D5">
                    <property name="enabled">
@@ -2045,20 +2066,6 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="2">
-                  <widget class="QCheckBox" name="chk_Dual_IMEI_D5">
-                   <property name="text">
-                    <string>Dual IMEI</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="4">
-                  <widget class="QCheckBox" name="chk_unLock_D5">
-                   <property name="text">
-                    <string>UnLock</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="2" column="5">
                   <widget class="QCheckBox" name="chk_Reboot_D5">
                    <property name="text">
@@ -2066,10 +2073,45 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
+                 <item row="2" column="0">
                   <widget class="QCheckBox" name="chk_manual_IMEI_D5">
                    <property name="text">
                     <string>Manual IMEI</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QCheckBox" name="chk_Dual_IMEI_D5">
+                   <property name="text">
+                    <string>Dual IMEI</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="2">
+                  <widget class="QCheckBox" name="chk_unLock_D5">
+                   <property name="text">
+                    <string>Unlock SIM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="4">
+                  <widget class="QCheckBox" name="chk_mdm_D5">
+                   <property name="text">
+                    <string>MDM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="2">
+                  <widget class="QPushButton" name="pb_unLock_D5">
+                   <property name="text">
+                    <string>Unlock SIM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0" colspan="2">
+                  <widget class="QPushButton" name="pb_StartRepairing_D5">
+                   <property name="text">
+                    <string>Repair IMEI</string>
                    </property>
                   </widget>
                  </item>
@@ -2258,13 +2300,6 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="2">
-                  <widget class="QPushButton" name="pb_unLock_D6">
-                   <property name="text">
-                    <string>unLock</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="3" column="4">
                   <widget class="QPushButton" name="pb_Stop_D6">
                    <property name="enabled">
@@ -2285,13 +2320,6 @@ padding-right:10px;</string>
                    </property>
                    <property name="wordWrap">
                     <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QPushButton" name="pb_StartRepairing_D6">
-                   <property name="text">
-                    <string>Start Repair</string>
                    </property>
                   </widget>
                  </item>
@@ -2320,20 +2348,6 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="2">
-                  <widget class="QCheckBox" name="chk_Dual_IMEI_D6">
-                   <property name="text">
-                    <string>Dual IMEI</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="3">
-                  <widget class="QCheckBox" name="chk_unLock_D6">
-                   <property name="text">
-                    <string>unLock</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="2" column="4">
                   <widget class="QCheckBox" name="chk_Reboot_D6">
                    <property name="text">
@@ -2341,10 +2355,45 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
+                 <item row="2" column="0">
                   <widget class="QCheckBox" name="chk_manual_IMEI_D6">
                    <property name="text">
                     <string>Manual IMEI</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QCheckBox" name="chk_Dual_IMEI_D6">
+                   <property name="text">
+                    <string>Dual IMEI</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="2">
+                  <widget class="QCheckBox" name="chk_unLock_D6">
+                   <property name="text">
+                    <string>Unlock SIM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="3">
+                  <widget class="QCheckBox" name="chk_mdm_D6">
+                   <property name="text">
+                    <string>MDM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="2">
+                  <widget class="QPushButton" name="pb_unLock_D6">
+                   <property name="text">
+                    <string>Unlock SIM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0" colspan="2">
+                  <widget class="QPushButton" name="pb_StartRepairing_D6">
+                   <property name="text">
+                    <string>Repair IMEI</string>
                    </property>
                   </widget>
                  </item>
@@ -2376,51 +2425,6 @@ padding-right:10px;</string>
               <layout class="QVBoxLayout" name="verticalLayout_3">
                <item>
                 <layout class="QGridLayout" name="gridLayout_2">
-                 <item row="0" column="3">
-                  <widget class="QComboBox" name="cmb_PortNumber_D7">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="mouseTracking">
-                    <bool>false</bool>
-                   </property>
-                   <property name="editable">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="4">
-                  <widget class="QPushButton" name="pb_Stop_D7">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>Stop</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="2">
-                  <widget class="QLabel" name="label_17">
-                   <property name="text">
-                    <string>Serial Port:</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                   <property name="wordWrap">
-                    <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="1" column="2">
                   <widget class="QLabel" name="label_18">
                    <property name="text">
@@ -2434,28 +2438,29 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="txt_IMEI_D7_2">
-                   <property name="enabled">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_11">
+                   <property name="text">
+                    <string>IMEI 1:</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="wordWrap">
                     <bool>false</bool>
                    </property>
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>30</height>
-                    </size>
-                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_19">
                    <property name="text">
-                    <string>111111111111119</string>
+                    <string>IMEI 2:</string>
                    </property>
-                   <property name="maxLength">
-                    <number>15</number>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="wordWrap">
+                    <bool>false</bool>
                    </property>
                   </widget>
                  </item>
@@ -2463,13 +2468,6 @@ padding-right:10px;</string>
                   <widget class="QPushButton" name="pb_CopytoClipBoard_D7">
                    <property name="text">
                     <string>Copy to ClipBoard</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="2">
-                  <widget class="QPushButton" name="pb_unLock_D7">
-                   <property name="text">
-                    <string>unLock</string>
                    </property>
                   </widget>
                  </item>
@@ -2498,23 +2496,87 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="1">
-                  <widget class="QPushButton" name="pb_StartRepairing_D7">
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="label_17">
                    <property name="text">
-                    <string>Start Repair</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_11">
-                   <property name="text">
-                    <string>IMEI 1:</string>
+                    <string>Serial Port:</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignCenter</set>
                    </property>
                    <property name="wordWrap">
                     <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="4">
+                  <widget class="QCheckBox" name="chk_Reboot_D7">
+                   <property name="text">
+                    <string>Reboot</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="4">
+                  <widget class="QPushButton" name="pb_Stop_D7">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string>Stop</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="txt_IMEI_D7_1">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>111111111111119</string>
+                   </property>
+                   <property name="maxLength">
+                    <number>15</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QCheckBox" name="chk_manual_IMEI_D7">
+                   <property name="text">
+                    <string>Manual IMEI</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3">
+                  <widget class="QComboBox" name="cmb_PortNumber_D7">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="mouseTracking">
+                    <bool>false</bool>
+                   </property>
+                   <property name="editable">
+                    <bool>true</bool>
                    </property>
                   </widget>
                  </item>
@@ -2557,8 +2619,15 @@ padding-right:10px;</string>
                    </item>
                   </widget>
                  </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="txt_IMEI_D7_1">
+                 <item row="2" column="1">
+                  <widget class="QCheckBox" name="chk_Dual_IMEI_D7">
+                   <property name="text">
+                    <string>Dual IMEI</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QLineEdit" name="txt_IMEI_D7_2">
                    <property name="enabled">
                     <bool>false</bool>
                    </property>
@@ -2582,44 +2651,31 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_19">
-                   <property name="text">
-                    <string>IMEI 2:</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                   <property name="wordWrap">
-                    <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="2" column="2">
-                  <widget class="QCheckBox" name="chk_Dual_IMEI_D7">
+                  <widget class="QCheckBox" name="chk_unLock_D7">
                    <property name="text">
-                    <string>Dual IMEI</string>
+                    <string>Unlock SIM</string>
                    </property>
                   </widget>
                  </item>
                  <item row="2" column="3">
-                  <widget class="QCheckBox" name="chk_unLock_D7">
+                  <widget class="QCheckBox" name="chk_mdm_D7">
                    <property name="text">
-                    <string>unLock</string>
+                    <string>MDM</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="4">
-                  <widget class="QCheckBox" name="chk_Reboot_D7">
+                 <item row="3" column="2">
+                  <widget class="QPushButton" name="pb_unLock_D7">
                    <property name="text">
-                    <string>Reboot</string>
+                    <string>Unlock SIM</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
-                  <widget class="QCheckBox" name="chk_manual_IMEI_D7">
+                 <item row="3" column="0" colspan="2">
+                  <widget class="QPushButton" name="pb_StartRepairing_D7">
                    <property name="text">
-                    <string>Manual IMEI</string>
+                    <string>Repair IMEI</string>
                    </property>
                   </widget>
                  </item>
@@ -2651,172 +2707,6 @@ padding-right:10px;</string>
               <layout class="QVBoxLayout" name="verticalLayout_16">
                <item>
                 <layout class="QGridLayout" name="gridLayout">
-                 <item row="0" column="3">
-                  <widget class="QComboBox" name="cmb_PortNumber_D8">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="mouseTracking">
-                    <bool>false</bool>
-                   </property>
-                   <property name="editable">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="txt_IMEI_D8_2">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>111111111111119</string>
-                   </property>
-                   <property name="maxLength">
-                    <number>15</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_4">
-                   <property name="text">
-                    <string>IMEI 1:</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                   <property name="wordWrap">
-                    <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="2">
-                  <widget class="QLabel" name="label_6">
-                   <property name="text">
-                    <string>Serial Port:</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                   <property name="wordWrap">
-                    <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="2">
-                  <widget class="QLabel" name="label_5">
-                   <property name="text">
-                    <string>Device Model:</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                   <property name="wordWrap">
-                    <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="4">
-                  <widget class="QPushButton" name="pb_CheckSerialPorts_D8">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>45</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>Check</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="txt_IMEI_D8_1">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>111111111111119</string>
-                   </property>
-                   <property name="maxLength">
-                    <number>15</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_3">
-                   <property name="text">
-                    <string>IMEI 2:</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                   <property name="wordWrap">
-                    <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QPushButton" name="pb_StartRepairing_D8">
-                   <property name="text">
-                    <string>Start Repair</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="4">
-                  <widget class="QPushButton" name="pb_Stop_D8">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>Stop</string>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="1" column="3">
                   <widget class="QComboBox" name="cmb_DeviceModel_D8">
                    <property name="sizePolicy">
@@ -2863,31 +2753,144 @@ padding-right:10px;</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="2">
-                  <widget class="QPushButton" name="pb_unLock_D8">
+                 <item row="3" column="4">
+                  <widget class="QPushButton" name="pb_Stop_D8">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="text">
-                    <string>unLock</string>
+                    <string>Stop</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
+                 <item row="2" column="0">
                   <widget class="QCheckBox" name="chk_Manual_IMEI_D8">
                    <property name="text">
                     <string>Manual IMEI</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="2">
+                 <item row="2" column="1">
                   <widget class="QCheckBox" name="chk_Dual_IMEI_D8">
                    <property name="text">
                     <string>Dual IMEI</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="3">
+                 <item row="2" column="2">
                   <widget class="QCheckBox" name="chk_unLock_D8">
                    <property name="text">
-                    <string>unLock</string>
+                    <string>Unlock SIM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="2">
+                  <widget class="QLabel" name="label_5">
+                   <property name="text">
+                    <string>Device Model:</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="wordWrap">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QLineEdit" name="txt_IMEI_D8_2">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>111111111111119</string>
+                   </property>
+                   <property name="maxLength">
+                    <number>15</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="txt_IMEI_D8_1">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>111111111111119</string>
+                   </property>
+                   <property name="maxLength">
+                    <number>15</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3">
+                  <widget class="QComboBox" name="cmb_PortNumber_D8">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="mouseTracking">
+                    <bool>false</bool>
+                   </property>
+                   <property name="editable">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="4">
+                  <widget class="QPushButton" name="pb_CheckSerialPorts_D8">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>30</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>45</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Check</string>
                    </property>
                   </widget>
                  </item>
@@ -2895,6 +2898,66 @@ padding-right:10px;</string>
                   <widget class="QCheckBox" name="chk_Reboot_D8">
                    <property name="text">
                     <string>Reboot</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_4">
+                   <property name="text">
+                    <string>IMEI 1:</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="wordWrap">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_3">
+                   <property name="text">
+                    <string>IMEI 2:</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="wordWrap">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QLabel" name="label_6">
+                   <property name="text">
+                    <string>Serial Port:</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignCenter</set>
+                   </property>
+                   <property name="wordWrap">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="3">
+                  <widget class="QCheckBox" name="chk_mdm_D8">
+                   <property name="text">
+                    <string>MDM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="2">
+                  <widget class="QPushButton" name="pb_unLock_D8">
+                   <property name="text">
+                    <string>Unlock SIM</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0" colspan="2">
+                  <widget class="QPushButton" name="pb_StartRepairing_D8">
+                   <property name="text">
+                    <string>Repair IMEI</string>
                    </property>
                   </widget>
                  </item>
@@ -3093,27 +3156,6 @@ padding-right:10px;</string>
                </item>
               </widget>
              </item>
-             <item row="2" column="2">
-              <widget class="QCheckBox" name="chk_Dual_IMEI_SPD">
-               <property name="text">
-                <string>Dual IMEI</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="3">
-              <widget class="QCheckBox" name="chk_AssignPort">
-               <property name="text">
-                <string>Assign Port</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QCheckBox" name="chk_Manual_IMEI_SPD">
-               <property name="text">
-                <string>Manual IMEI</string>
-               </property>
-              </widget>
-             </item>
              <item row="1" column="4">
               <widget class="QPushButton" name="pb_CheckADB_Devices">
                <property name="sizePolicy">
@@ -3139,77 +3181,49 @@ padding-right:10px;</string>
                </property>
               </widget>
              </item>
+             <item row="2" column="0">
+              <widget class="QCheckBox" name="chk_Manual_IMEI_SPD">
+               <property name="text">
+                <string>Manual IMEI</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QCheckBox" name="chk_Dual_IMEI_SPD">
+               <property name="text">
+                <string>Dual IMEI</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="4">
+              <widget class="QCheckBox" name="chk_AssignPort">
+               <property name="text">
+                <string>Assign Port</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_5">
              <item>
-              <spacer name="horizontalSpacer_6">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Preferred</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
               <widget class="QPushButton" name="pb_StartRepair_SPD">
                <property name="text">
-                <string>Start Repair</string>
+                <string>Repair IMEI</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QPushButton" name="pb_unLock_SPD">
                <property name="text">
-                <string>unLock</string>
+                <string>Unlock SIM</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QPushButton" name="pb_FRP_SPD">
                <property name="text">
-                <string>FRP fastBoot</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="pb_CopytoClipBoard_SPD">
-               <property name="text">
-                <string>Copy to ClipBoard</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_7">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Preferred</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="pb_Stop_SPD">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string>Stop</string>
+                <string>Fastboot FRP</string>
                </property>
               </widget>
              </item>
@@ -3223,11 +3237,28 @@ padding-right:10px;</string>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>40</width>
+                 <width>20</width>
                  <height>20</height>
                 </size>
                </property>
               </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pb_CopytoClipBoard_SPD">
+               <property name="text">
+                <string>Copy to ClipBoard</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pb_Stop_SPD">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Stop</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
@@ -3278,28 +3309,6 @@ padding-right:10px;</string>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_13"/>
    </widget>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>936</width>
-     <height>21</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
   </widget>
  </widget>
  <resources/>

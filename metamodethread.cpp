@@ -58,6 +58,14 @@ void MetaModeThread::rx_StartRepairing_metaMode(int idx, bool startStop, TOOL_TY
             emit tx_miscOperations_metaMode(currentToolType, generalIndex, 5, "");
             emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Start process Unlock: OK", false, false, GlobalVars::txtOutPutColor);
         }
+        else if(currentToolType == Tool_META_CarrierFix){
+                                 //MMM.exe -k 4 -odm1 ontim -project bj -m user -t write_country_code retbr_retbr -reboot -skipMD
+            commandStr = QString("MMM.exe -k "+GlobalVars::meta_serialPortName[generalIndex]+" -odm1 ontim -project "+GlobalVars::meta_projectName[generalIndex] +" -m user -t write_country_code retbr_retbr -reboot -skipMD");
+            qDebug()<<" Serial Port: "<<GlobalVars::meta_serialPortName;
+            qDebug()<<" MTK-Carrier Fix Command: "<<commandStr;
+            emit tx_miscOperations_metaMode(currentToolType, generalIndex, 5, "");
+            emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Start process Carrier Fix: OK", false, false, GlobalVars::txtOutPutColor);
+        }
 
 
 
@@ -105,7 +113,8 @@ void MetaModeThread::rx_CommandLine_OutPutReceived()
 
     commandlineOutPut = metaProcess->readAllStandardOutput();
     //if(showTheConsole)
-    //qDebug()<<"\n\n ---------------------------------------------------- \n rx_CommandLine_OutPutReceived: "<<commandlineOutPut;
+    if(currentCommand == MMM_MDM)
+        qDebug()<<"\n\n ---------------------------------------------------- \n rx_CommandLine_OutPutReceived: "<<commandlineOutPut;
 
     if(currentToolType == Tool_MTK)
     {
@@ -115,6 +124,32 @@ void MetaModeThread::rx_CommandLine_OutPutReceived()
     {
         check_UnLock_Cmd_outPut(commandlineOutPut);
     }
+    else if(currentToolType == Tool_META_CarrierFix)
+    {
+        check_CarrierFix_Cmd_outPut(commandlineOutPut);
+    }
+
+}
+void MetaModeThread::check_CarrierFix_Cmd_outPut(QString str)
+{
+    qDebug()<<"\n\n ---------------------------------------------------- \n check_CarrierFix_Cmd_outPut: "<<str;
+
+    if(str.contains("Motorola Modem Meta Tool Passed."))
+    {
+        emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex,"Getting Authorization From Server: OK", false, false , GlobalVars::txtOutPutColor);
+        emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex, QString("Model: " + GlobalVars::meta_modelStr[generalIndex]), false, false , GlobalVars::txtOutPutColor);
+        emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex,"Invalid Carrier Fixed : OK", false, false , GlobalVars::txtOutPutColor);
+        emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex,"Rebooting: OK", true, false , GlobalVars::txtOutPutColor);
+        emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex,"Process Successfull Completed", true, false , GlobalVars::txtOutPutColor);
+
+        emit tx_miscOperations_metaMode(currentToolType,  generalIndex, 100, "");
+    }
+    else if(str.contains("FrameComm-> Error in writing COM"))
+    {
+        emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex,"Error in ComPort Communication", true, false , Qt::red);
+        emit tx_miscOperations_metaMode(currentToolType,  generalIndex, 100, "");
+    }
+
 
 }
 void MetaModeThread::check_Repair_Cmd_outPut(QString str)
@@ -149,10 +184,22 @@ void MetaModeThread::check_Repair_Cmd_outPut(QString str)
     }
     else if (commandlineOutPut.contains("Motorola Modem Meta Tool Passed."))
     {
+        if(currentCommand == MMM_AuthenticationBytes){
+            currentCommand = MMM_OK_AfterAuthenticationBytes;
+            timer_Meta_singleShot->start(500);
+        }
+        else if(currentCommand == MMM_MDM){
 
-        currentCommand = MMM_OK_AfterAuthenticationBytes;
-        timer_Meta_singleShot->start(500);
-
+            if (GlobalVars::meta_reboot_bool[generalIndex]) {
+                currentCommand = MMM_Rebooting;
+                timer_Meta_singleShot->start(3000);
+            }else{
+                emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex, "Process Successfull Completed", true, false , GlobalVars::txtOutPutColor);
+                emit tx_miscOperations_metaMode(currentToolType,  generalIndex, 100, "Success");
+                currentCommand = MMM_Exit;
+                timer_Meta_singleShot->start(3000);
+            }
+        }
     }
     else if (commandlineOutPut.contains("Motorola Modem Meta Tool Failed"))
     {
@@ -194,16 +241,7 @@ void MetaModeThread::check_Repair_Cmd_outPut(QString str)
         if(timer_Meta_singleShot->isActive()) timer_Meta_singleShot->stop();
         timer_Meta_singleShot->start(500);
     }
-    /*
-    else if(commandlineOutPut.contains("IMetaFrameCommBase::Disconnect: FrameCommModule stopped")) // || commandlineOutPut.contains("OS & Port Version End======================================================"))
-    {
-        emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex,"Phone Disconnected. Please plugin again and start the process.", true, false , Qt::red);
-        emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
-        currentCommand = MMM_Exit;
-        if(timer_Meta_singleShot->isActive()) timer_Meta_singleShot->stop();
-        timer_Meta_singleShot->start(500);
-    }
-*/
+
 }
 void MetaModeThread::check_UnLock_Cmd_outPut(QString str)
 {
@@ -311,16 +349,62 @@ void MetaModeThread::rx_timer_Meta_singleShot()
             emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex, QString("Verify Unlock: OK"), false, false, GlobalVars::txtOutPutColor);
         }
 
-        if (GlobalVars::meta_reboot_bool[generalIndex])
+        if (GlobalVars::meta_MDM_bool[generalIndex] && currentToolType == Tool_MTK)
         {
-            currentCommand = MMM_Rebooting;
-            timer_Meta_singleShot->start(3000);
+            currentCommand = MMM_MDM;
+            timer_Meta_singleShot->start(2000);
         }else{
-            emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex, "Process Successfull Completed", true, false , GlobalVars::txtOutPutColor);
-            emit tx_miscOperations_metaMode(currentToolType,  generalIndex, 100, "Success");
-            currentCommand = MMM_Exit;
-            timer_Meta_singleShot->start(3000);
+
+            if (GlobalVars::meta_reboot_bool[generalIndex])
+            {
+                currentCommand = MMM_Rebooting;
+                timer_Meta_singleShot->start(3000);
+            }else{
+                emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex, "Process Successfull Completed", true, false , GlobalVars::txtOutPutColor);
+                emit tx_miscOperations_metaMode(currentToolType,  generalIndex, 100, "Success");
+                currentCommand = MMM_Exit;
+                timer_Meta_singleShot->start(3000);
+            }
         }
+        break;
+    }
+    case MMM_MDM:{
+                                //mmm.exe -k COMPORT            -odm1 ontim -project malta -m user -factory_reset -skipMD
+        QByteArray mdmCmd(QString("MMM.exe -k " + GlobalVars::meta_serialPortName[generalIndex] + " -odm1 ontim -project " + GlobalVars::meta_projectName[generalIndex] + " -m user -factory_reset -skipMD").toUtf8());
+        qDebug()<<" MDM Command: "<<mdmCmd;
+
+
+
+
+        shellArguments.clear();
+        shellArguments.append("/C");
+        //shellArguments.append("ipconfig");
+        shellArguments.append(mdmCmd);
+
+        metaProcess->setArguments(shellArguments);
+
+        qDebug()<<"\n\n \t Process Opening: "<<metaProcess->open(QIODevice::ReadWrite);
+
+        if (metaProcess->waitForStarted(1000) == false)
+            qDebug() << "Error starting external program";
+        else
+            qDebug() << " \n\n\n\n\n external program running";
+
+        metaProcess->waitForReadyRead(15000);
+
+
+
+        /*
+        metaProcess->write(mdmCmd);
+        metaProcess->write(" \n");
+        metaProcess->closeWriteChannel();
+        metaProcess->waitForBytesWritten(1000);
+        metaProcess->waitForReadyRead(15000);
+        */
+
+        emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex, "MDM Removed : OK", true, false , GlobalVars::txtOutPutColor);
+        emit tx_miscOperations_metaMode(currentToolType, generalIndex, 90, "Success");
+
         break;
     }
     case MMM_Rebooting:{
@@ -350,8 +434,7 @@ void MetaModeThread::rx_timer_Meta_singleShot()
             metaProcess->waitForBytesWritten(1000);
             metaProcess->waitForReadyRead(100);
         }
-        metaProcess->terminate();
-        metaProcess->kill();
+        qDebug()<<" Process killed";
         metaProcess->close();
         break;
     }

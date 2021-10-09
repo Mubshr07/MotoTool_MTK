@@ -27,6 +27,7 @@ public slots:
     void rx_ADB_ErrorReceived();
 
     void rx_timer_SPDTool_elapsed();
+    void rx_timer_singleShot_elapsed();
 
 
 
@@ -35,6 +36,7 @@ private:
     QSerialPort *serialport;
     QProcess *adbProcess;
     QTimer *timer_SPDTool;
+    QTimer *timer_SingleShot;
     int singleShotIndex = 0;
 
 

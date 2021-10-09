@@ -9,6 +9,7 @@ selection-background-color: #ff9900;
 selection-color: #000;
 font-size: 12pt;
 font-weight:550;
+padding:0px; margin : 0px;
 }
 
 
@@ -167,8 +168,8 @@ border-width: 2px;
 border-radius: 5px;
 border-color: #051a39;
 padding: 5px;
-padding-left:15px;
-padding-right:15px;
+padding-left: 5px;
+padding-right: 5px;
 
 }
 
@@ -269,10 +270,14 @@ padding-right: 15px;
 
 QTabWidget::pane 
 {
-background-color: red;
+background-color: transparent;
 border: 1px solid #666;
 top: 1px;
-
+padding-top: 0px;
+padding-bottom: 0px;
+padding-left: 0px;
+padding-right: 0px;
+margin : 0px;
 }
 
 

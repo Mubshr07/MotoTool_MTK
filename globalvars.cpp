@@ -14,6 +14,7 @@ QString GlobalVars::meta_projectUnlockType[8] = {"", "", "", "", "", "", "", ""}
 bool GlobalVars::meta_dual_imei_bool[8] = {false, false, false, false, false, false, false, false};
 bool GlobalVars::meta_manual_imei_bool[8] = {false, false, false, false, false, false, false, false};
 bool GlobalVars::meta_unLock_bool[8] = {false, false, false, false, false, false, false, false};
+bool GlobalVars::meta_MDM_bool[8] = {false, false, false, false, false, false, false, false};
 bool GlobalVars::meta_reboot_bool[8] = {false, false, false, false, false, false, false, false};
 
 

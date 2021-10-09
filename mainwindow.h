@@ -175,6 +175,24 @@ private slots:
 
     void on_pb_FRP_SPD_clicked();
 
+    void on_pb_carrierFix_D1_clicked();
+
+    void on_chk_mdm_D1_stateChanged(int arg1);
+
+    void on_chk_mdm_D2_stateChanged(int arg1);
+
+    void on_chk_mdm_D3_stateChanged(int arg1);
+
+    void on_chk_mdm_D4_stateChanged(int arg1);
+
+    void on_chk_mdm_D5_stateChanged(int arg1);
+
+    void on_chk_mdm_D6_stateChanged(int arg1);
+
+    void on_chk_mdm_D7_stateChanged(int arg1);
+
+    void on_chk_mdm_D8_stateChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
     void initializeObjectsAndStartThread();

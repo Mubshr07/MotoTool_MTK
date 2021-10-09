@@ -8,6 +8,11 @@ BackEndClass::BackEndClass(QObject *parent) : QObject(parent)
     singleShotIndex = 0;
 
 
+    timer_SingleShot = new QTimer(this);
+    timer_SingleShot->setSingleShot(true);
+    connect(timer_SingleShot, SIGNAL(timeout()), this, SLOT(rx_timer_singleShot_elapsed()));
+
+
     QDir chckRequiredFolder(m3FolderPath);
     if(!chckRequiredFolder.exists()){
         QMessageBox::critical(nullptr, "M3 Error", "Please Install the Mototool Software.", QMessageBox::Ok);
@@ -37,8 +42,6 @@ BackEndClass::BackEndClass(QObject *parent) : QObject(parent)
     //connect(adbProcess, SIGNAL(finished(int)), this, SLOT(rx_ADB_OutPutReceived()));
     connect(adbProcess, SIGNAL(readyReadStandardError()), this, SLOT(rx_ADB_ErrorReceived()));
     connect(adbProcess, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(rx_ADB_ErrorReceived()));
-
-
 }
 
 void BackEndClass::rx_StartRepairing(int idx, bool startStop, TOOL_TYPE tool)
@@ -94,6 +97,7 @@ void BackEndClass::rx_StartRepairing(int idx, bool startStop, TOOL_TYPE tool)
         if(currentToolType ==  Tool_SPD_FRP_FastBoot)
         {
             spd_commandStr = "fastboot devices";
+            timer_SingleShot->start(3000);
         } else {
             spd_commandStr = "adb devices";
         }
@@ -438,7 +442,7 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
         break;
     }
     case ADB_FRP_PushFile:{
-        spd_commandStr = QString("fastboot.exe  signature "+fastBoot_FileName+" oem passwd "+frp_PassWord+" returned in dbs");
+        spd_commandStr = QString("fastboot.exe  signature "+fastBoot_FileName+" oem passwd "+frp_PassWord); //+" returned in dbs");
         shellArguments.clear();
         shellArguments.append("/C");
         shellArguments.append(spd_commandStr);
@@ -494,6 +498,15 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
     }
 }
 
+void BackEndClass::rx_timer_singleShot_elapsed()
+{
+    emit tx_miscOperations(currentToolType, 1, 100, "");
+    emit tx_TextBoxOutput(currentToolType, 1, QString(" No Device Found. "), true, false, Qt::red);
+}
+
+
+
+
 // ---------------- ADB + SPD Slots and Methods -----------------------
 void BackEndClass::rx_ADB_OutPutReceived()
 {
@@ -546,6 +559,7 @@ void BackEndClass::getConnectedDevices_andSendThemGUI(QByteArray ba)
     if(currentToolType == Tool_SPD_FRP_FastBoot){
         frp_infoCompleted = false;
         frpInfoIndex = 0;
+        timer_SingleShot->stop();
         if(ba.contains("fastboot")){
             endlineIndx = ba.indexOf(" ");
             frp_DeviceID = ba.left(endlineIndx);
@@ -570,6 +584,9 @@ void BackEndClass::getConnectedDevices_andSendThemGUI(QByteArray ba)
             singleShotIndex=1;
             timer_SPDTool->start(500);
             emit tx_miscOperations(currentToolType, 1, 15, "");
+        } else {
+            emit tx_TextBoxOutput(currentToolType, 1, "Error in Finding Devices, Please re-Plug the device \n ---------------------------------", false, false, Qt::red);
+            emit tx_miscOperations(currentToolType, 1, 100, "");
         }
     } else {
         if(ba.contains("List of devices attached")){
@@ -618,9 +635,9 @@ void BackEndClass::getADB_Model(QByteArray ba)
     if(currentToolType == Tool_SPD_FRP_FastBoot){
         getFastBoot_info(ba);
         if(frp_infoCompleted){
-        currentADB =  ADB_FRP_GetServerFile;
-        timer_SPDTool->start(500);
-        emit tx_miscOperations(Tool_SPD, 1, 25, "");
+            currentADB =  ADB_FRP_GetServerFile;
+            timer_SPDTool->start(500);
+            emit tx_miscOperations(Tool_SPD, 1, 25, "");
         }
 
     } else {
@@ -1018,28 +1035,43 @@ void BackEndClass::get_FRP_GetServerFile(QByteArray ba)
 {
     qDebug()<<"get_FRP_GetServerFile::  "<<ba;
 
-    currentADB = ADB_FRP_PushFile;
-    timer_SPDTool->start(500);
 }
 void BackEndClass::get_FRP_PushFile(QByteArray ba)
 {
     qDebug()<<"get_FRP_PushFile::  "<<ba;
 
-
-    currentADB = ADB_FRP_FastBootErase;
-    timer_SPDTool->start(500);
+    if(ba.contains("You can use flash/erase partition for assign partition")){
+        emit tx_miscOperations(currentToolType, 1, 60, "");
+        emit tx_TextBoxOutput(currentToolType, 1, QString("Device FRP Execution : OK"), false, false, GlobalVars::txtOutPutColor);
+        currentADB = ADB_FRP_FastBootErase;
+        timer_SPDTool->start(500);
+    }
 }
 void BackEndClass::get_FRP_FastBootErase(QByteArray ba)
 {
     qDebug()<<"get_FRP_FastBootErase::  "<<ba;
 
+    if(ba.contains("Erasing 'frp'")){
+        int idx = ba.indexOf("Erasing 'frp'");
+        ba = ba.right(ba.length() - idx);
 
-    currentADB = ADB_FRP_Fast_Reboot;
-    timer_SPDTool->start(500);
+        emit tx_miscOperations(currentToolType, 1, 75, "");
+        emit tx_TextBoxOutput(currentToolType, 1, QString("Removing Device FRP : OK"), false, false, GlobalVars::txtOutPutColor);
+
+        currentADB = ADB_FRP_Fast_Reboot;
+        timer_SPDTool->start(500);
+    }
+
 }
 void BackEndClass::get_FRP_Fast_Reboot(QByteArray ba)
 {
     qDebug()<<"get_FRP_Fast_Reboot::  "<<ba;
+    if(ba.contains("Rebooting                                          OKAY ")){
+        emit tx_miscOperations(currentToolType, 1, 90, "");
+        emit tx_TextBoxOutput(currentToolType, 1, QString("Rebooting : OK"), false, false, GlobalVars::txtOutPutColor);
+    }
+    emit tx_miscOperations(currentToolType, 1, 100, "");
+    emit tx_TextBoxOutput(currentToolType, 1, QString("FRP Process: Sucessfull."), true, false, GlobalVars::txtOutPutColor);
 
 }
 
@@ -1158,17 +1190,16 @@ bool BackEndClass::getServerFastBoot_File()
     QEventLoop loop;
     QNetworkAccessManager nam;
     QNetworkRequest req;
-    req.setUrl(QUrl("http://server51214110.ngrok.io/frp.php"));
+    req.setUrl(QUrl(QString("http://server51214110.ngrok.io/frp.php?"+postdata)));
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    //qDebug()<<"URL:: "<<req.url();
-    QNetworkReply *reply = nam.post(req, postdata);
+    qDebug()<<"URL:: "<<req.url();
+    //QNetworkReply *reply = nam.post(req, postdata);
+    QNetworkReply *reply = nam.get(req);
     connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     loop.exec();
     if(processStartStop ==  false){
         return false;
     }
-    emit tx_miscOperations(currentToolType, 1, 40, "");
-    emit tx_TextBoxOutput(currentToolType, 1, QString("Geting FastBoot data from Server: OK"), false, false, GlobalVars::txtOutPutColor);
 
     QByteArray buffer = reply->readAll();
     //qDebug()<<" reply:: "<<buffer;
@@ -1176,39 +1207,56 @@ bool BackEndClass::getServerFastBoot_File()
     if(processStartStop ==  false){
         return false;
     }
-    qDebug()<<"\n\n\n FastBoot response_data::"<<buffer;
-    qDebug()<<"\n\n";
+    //qDebug()<<"\n\n\n FastBoot response_data::"<<buffer;
+    //qDebug()<<"\n\n";
 
     if (buffer.contains("success"))
     {
         buffer.replace("success: ", "");
         int idx = buffer.indexOf(":");
         QByteArray fileBytes = buffer.left(idx);
+        qDebug()<<"\n\n";
+        qDebug()<<" xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ";
+        qDebug()<<" File Bytes:: " <<fileBytes<<" Length::"<<fileBytes.length();
+        QByteArray text = QByteArray::fromHex(fileBytes);
+        qDebug()<<" xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ";
+        qDebug()<<" Text:: "<<QString::fromLatin1(text)<<" Length::"<<text.length();
+        qDebug()<<" xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ";
         frp_PassWord.clear();
         frp_PassWord = buffer.right(buffer.length() - (idx+1));
-
+        qDebug()<<" frp_PassWord Data:: "<<frp_PassWord<<" Length::"<<frp_PassWord.length();
+        qDebug()<<" xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ";
         fastBoot_FileName = QString (fastBootFolderPath+"/signature_"+ frp_PassWord);
         qDebug()<<" FRP File Path: "<<fastBoot_FileName;
+        qDebug()<<"\n\n";
+        emit tx_miscOperations(currentToolType, 1, 40, "");
+        emit tx_TextBoxOutput(currentToolType, 1, QString("Getting FastBoot data from Server: OK"), false, false, GlobalVars::txtOutPutColor);
+
         QFile frpF(fastBoot_FileName);
         if(frpF.open(QIODevice::WriteOnly))
         {
             qDebug()<<" File Open ";
-            frpF.write(fileBytes);
-            frpF.close();
+            //QTextStream out(&frpF);
+              //  out << text;
+            frpF.write(text);
 
-            emit tx_miscOperations(currentToolType, 1, 40, "");
-            emit tx_TextBoxOutput(currentToolType, 1, QString("Server Response: OK"), false, false, GlobalVars::txtOutPutColor);
+            currentADB = ADB_FRP_PushFile;
+            timer_SPDTool->start(500);
         } else {
             qDebug()<<" Error in Writing FastBoot File.";
             emit tx_miscOperations(currentToolType, 1, 100, "");
             emit tx_TextBoxOutput(currentToolType, 1, QString("Error in FastBoot File."), false, false, Qt::red);
             return false;
         }
-
+        frpF.close();
+    } else {
+        emit tx_miscOperations(currentToolType, 1, 100, "");
+        emit tx_TextBoxOutput(currentToolType, 1, QString("Error in FastBoot File."), false, false, Qt::red);
+        return false;
     }
-
     return true;
 }
+
 
 
 bool BackEndClass::getServerIMEInumber_updateGlobal()

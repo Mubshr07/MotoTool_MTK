@@ -5,6 +5,7 @@ enum MMM_Commands{
     MMM_Idle,
     MMM_AuthenticationBytes,
     MMM_OK_AfterAuthenticationBytes,
+    MMM_MDM,
     MMM_Rebooting,
     MMM_Exit
 };
@@ -13,7 +14,8 @@ enum TOOL_TYPE{
     Tool_MTK_UnLock,
     Tool_SPD,
     Tool_UnLock,
-    Tool_SPD_FRP_FastBoot
+    Tool_SPD_FRP_FastBoot,
+    Tool_META_CarrierFix
 };
 enum ADB_Commands{
     ADB_Idle,
@@ -90,6 +92,7 @@ public:
     static bool meta_dual_imei_bool[8];
     static bool meta_manual_imei_bool[8];
     static bool meta_unLock_bool[8];
+    static bool meta_MDM_bool[8];
     static bool meta_reboot_bool[8];
 
     static QString spd_imei_1;
