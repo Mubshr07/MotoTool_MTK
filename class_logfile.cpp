@@ -47,4 +47,42 @@ void Class_LogFile::writeToLog(QByteArray ba)
         logFile->write("\n========================================================\n\n");
         logFile->close();
     }
+
+
+
+
+
+    QByteArray postdata;// = data.toJson();
+    postdata.append(QString("OperationId="+ QString::number(1) +"&").toUtf8());
+    postdata.append(QString("Log="+ ba).toUtf8());
+    qDebug()<<" \n\n ByteArray:"<<postdata<<"\n\n";
+
+
+    QEventLoop loop;
+    QNetworkAccessManager nam;
+    QNetworkRequest req;
+    req.setUrl(QUrl(GlobalVars::api_LogQString));
+    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+    QNetworkReply *reply = nam.post(req, postdata);
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+
+    QJsonDocument document = QJsonDocument::fromJson(reply->readAll());
+    QJsonObject buffer = document.object();
+
+    qDebug()<<"Log reply:: "<<buffer;
+    qDebug()<<"\n\n ";
+
+
+
+
+
+
+
+
+
+
+
 }

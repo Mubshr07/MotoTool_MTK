@@ -140,58 +140,38 @@ private slots:
 
 
     void on_chk_unLock_D1_stateChanged(int arg1);
-
     void on_chk_unLock_D2_stateChanged(int arg1);
-
     void on_chk_unLock_D4_stateChanged(int arg1);
-
     void on_chk_unLock_D3_stateChanged(int arg1);
-
     void on_chk_unLock_D5_stateChanged(int arg1);
-
     void on_chk_unLock_D6_stateChanged(int arg1);
-
     void on_chk_unLock_D7_stateChanged(int arg1);
-
     void on_chk_unLock_D8_stateChanged(int arg1);
 
     void on_chk_Manual_IMEI_D8_stateChanged(int arg1);
-
     void on_chk_manual_IMEI_D1_stateChanged(int arg1);
-
     void on_chk_manual_IMEI_D2_stateChanged(int arg1);
-
     void on_chk_manual_IMEI_D3_stateChanged(int arg1);
-
     void on_chk_manual_IMEI_D4_stateChanged(int arg1);
-
     void on_chk_manual_IMEI_D5_stateChanged(int arg1);
-
     void on_chk_manual_IMEI_D6_stateChanged(int arg1);
-
     void on_chk_manual_IMEI_D7_stateChanged(int arg1);
-
     void on_chk_Manual_IMEI_SPD_stateChanged(int arg1);
 
     void on_pb_FRP_SPD_clicked();
-
     void on_pb_carrierFix_D1_clicked();
-
     void on_chk_mdm_D1_stateChanged(int arg1);
-
     void on_chk_mdm_D2_stateChanged(int arg1);
-
     void on_chk_mdm_D3_stateChanged(int arg1);
-
     void on_chk_mdm_D4_stateChanged(int arg1);
-
     void on_chk_mdm_D5_stateChanged(int arg1);
-
     void on_chk_mdm_D6_stateChanged(int arg1);
-
     void on_chk_mdm_D7_stateChanged(int arg1);
-
     void on_chk_mdm_D8_stateChanged(int arg1);
+
+    void on_pb_Minimize_clicked();
+    void on_pb_CopyUniqueID_clicked();
+    void on_pb_Close_2_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -223,6 +203,7 @@ private:
     void processSettingsFileLine(QString linee);
     void saveNewSettings();
     bool rememberMyCredentials = false;
+
 
 
 

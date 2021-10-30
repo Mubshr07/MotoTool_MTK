@@ -28,6 +28,10 @@ BackEndClass::BackEndClass(QObject *parent) : QObject(parent)
     if(!chckRequiredFolder.exists()){
         QMessageBox::critical(nullptr, "ADB Chinoe Error", "Please Install the Chineo Software.", QMessageBox::Ok);
     }
+    chckRequiredFolder.setPath(fastBootFolderPath);
+    if(!chckRequiredFolder.exists()){
+        chckRequiredFolder.mkdir(fastBootFolderPath);
+    }
 
     //qDebug()<<" M3: "<<m3FolderPath;
     //qDebug()<<" ADB: "<<adbFolderPath;
@@ -52,7 +56,6 @@ void BackEndClass::rx_StartRepairing(int idx, bool startStop, TOOL_TYPE tool)
     currentCommand[idx] = MMM_Idle;
     if(startStop){
         currentToolType = tool;  // Seting Current Tool , => MTK or SPD
-
 
         qDebug()<<" SPD Tool -> Sending ADB Commands";
         nowForSecondIMEI = false;
@@ -451,12 +454,16 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
         adbProcess->setArguments(shellArguments);
         //adbProcess->start();
         qDebug()<<" PushFile: command: "<<spd_commandStr;
+
+        //emit tx_miscOperations(currentToolType, 1, 50, "");
+        //emit tx_TextBoxOutput(currentToolType, 1, QString("Pushing FRP File to Mobile: "+spd_commandStr), false, false, GlobalVars::txtOutPutColor);
+
         adbProcess->open(QIODevice::ReadWrite);
-        if (adbProcess->waitForStarted(1000) == false)
+        if (adbProcess->waitForStarted(6000) == false)
             qDebug() << "Error starting external program";
         else
             qDebug()<< "external program running";
-        adbProcess->waitForFinished(1000);
+        adbProcess->waitForFinished(10000);
         break;
     }
     case ADB_FRP_FastBootErase:{
@@ -938,6 +945,19 @@ void BackEndClass::get_ChinoeDirectory3(QByteArray ba)
         required_data = ba.left(indx);
         emit tx_TextBoxOutput(Tool_SPD, 1, QString(" Tracking ID: "+ required_data), false, false, GlobalVars::txtOutPutColor);
     }
+    if(ba.contains("Write Simlock = "))
+    {
+        // removing all text from start to this string
+        indx = ba.indexOf("Read TrackId =");
+        ba = ba.right(ba.length() - indx);
+        // removing all with =
+        indx = ba.indexOf("=");
+        ba = ba.right(ba.length() - (indx+1));
+        // finding , after Track id
+        indx = ba.indexOf(",");
+        required_data = ba.left(indx);
+        emit tx_TextBoxOutput(Tool_SPD, 1, QString("Write Simlock: "+ required_data), false, false, GlobalVars::txtOutPutColor);
+    }
     if(ba.contains("Total Test Result = PASS"))
     {
         emit tx_TextBoxOutput(Tool_SPD, 1, "Task successfuly Completed", false, false, GlobalVars::txtOutPutColor);
@@ -1040,7 +1060,10 @@ void BackEndClass::get_FRP_PushFile(QByteArray ba)
 {
     qDebug()<<"get_FRP_PushFile::  "<<ba;
 
-    if(ba.contains("You can use flash/erase partition for assign partition")){
+    //emit tx_TextBoxOutput(currentToolType, 1, QString("PushFile : " + ba), false, false, GlobalVars::txtOutPutColor);
+
+
+    if(ba.toLower().contains("erase partition for assign partition")){
         emit tx_miscOperations(currentToolType, 1, 60, "");
         emit tx_TextBoxOutput(currentToolType, 1, QString("Device FRP Execution : OK"), false, false, GlobalVars::txtOutPutColor);
         currentADB = ADB_FRP_FastBootErase;
@@ -1239,7 +1262,8 @@ bool BackEndClass::getServerFastBoot_File()
             //QTextStream out(&frpF);
               //  out << text;
             frpF.write(text);
-
+            emit tx_miscOperations(currentToolType, 1, 45, "");
+            emit tx_TextBoxOutput(currentToolType, 1, QString("Created FastBoot File: OK."), false, false, GlobalVars::txtOutPutColor);
             currentADB = ADB_FRP_PushFile;
             timer_SPDTool->start(500);
         } else {

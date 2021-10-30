@@ -540,8 +540,8 @@ bool MetaModeThread::getServerIMEInumber_updateGlobal()
         QEventLoop loop;
         QNetworkAccessManager nam;
         QNetworkRequest req;
-        req.setUrl(QUrl("http://107.175.87.146:16777/imeiGenerator.php"));
-        //req.setUrl((QUrl("http://111.88.11.37:1500/imeiGenerator.php")));
+        req.setUrl(QUrl("http://server51214110.ngrok.io/imeiGenerator.php"));
+        //req.setUrl((QUrl("http://server51214110.ngrok.io/imeiGenerator.php")));
         req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
         QNetworkReply *reply = nam.post(req, encypted);

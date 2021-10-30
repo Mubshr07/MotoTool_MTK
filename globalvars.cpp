@@ -34,6 +34,21 @@ QList<QSerialPortInfo> GlobalVars::availablePortsList;
 QColor GlobalVars::txtOutPutColor = QColor::fromRgb(255, 153, 0);
 
 
+QString GlobalVars::authorizedToken = "";
+float GlobalVars::userInfo_creditDetails=0.0;
+QString GlobalVars::userInfo_HardwareKey = "";
+QString GlobalVars::userInfo_UserName = "";
+
+
+
+
+QString GlobalVars::api_logURLQString = QString("http://phpstack-653970-2162634.cloudwaysapps.com/api/login");
+QString GlobalVars::api_serverStatusQString = QString("http://phpstack-653970-2162634.cloudwaysapps.com/api/status");
+QString GlobalVars::api_VersionQString = QString("http://phpstack-653970-2162634.cloudwaysapps.com/api/version");
+QString GlobalVars::api_LogQString = QString("http://phpstack-653970-2162634.cloudwaysapps.com/api/log");
+QString GlobalVars::api_PerformQString = QString("http://phpstack-653970-2162634.cloudwaysapps.com/api/perform");
+
+
 GlobalVars::GlobalVars()
 {
 

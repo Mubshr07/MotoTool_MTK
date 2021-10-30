@@ -51,11 +51,12 @@ MainWindow::MainWindow(QWidget *parent)
     timer_singleShot->start(80);
     singleShotIndex = 1;
 
-    ui->lbl_loginServerStatus->setText("onLine");
-    ui->lbl_loginServerStatus->setStyleSheet("color:lime;");
+    ui->lbl_loginServerStatus->setText("--");
+    ui->lbl_loginServerStatus->setStyleSheet("color:black;");
 
 
     metaTabUniversal = ui->tabWidgetMeta->currentIndex();
+
 }
 
 MainWindow::~MainWindow()
@@ -81,46 +82,125 @@ void MainWindow::on_timer_singleShot_Elapsed()
 // ------------ Button Slots ----------------
 void MainWindow::on_pb_Login_clicked()
 {
+    /*
     ui->loginFrame->hide();
     ui->processFrame->show();
     this->setFixedSize(860, 600);
     return;
-
+    */
     QByteArray postdata;// = data.toJson();
     postdata.append(QString("sysID="+ ui->lbl_SystemID->text()+"&").toUtf8());
-    postdata.append(QString("emailUserName="+ ui->txt_UsernameEmail->text() +"&").toUtf8());
-    postdata.append(QString("password="+ ui->txt_Password->text()+"&").toUtf8());
+    postdata.append(QString("UserName="+ ui->txt_UsernameEmail->text() +"&").toUtf8());
+    postdata.append(QString("Password="+ ui->txt_Password->text()+"&").toUtf8());
 
     ui->lbl_LoginResults->setText("Wait for Server Response");
 
     qDebug()<<" \n\n ByteArray:"<<postdata<<"\n\n";
     QEventLoop loop;
     QNetworkAccessManager nam;
-    QNetworkRequest req; //(QUrl("https://server51214110.ngrok.io/auth.php"));
-    QSslConfiguration config = QSslConfiguration::defaultConfiguration();
-    //config.setProtocol(QSsl::SslV2);
-    //req.setSslConfiguration(config);
-    req.setUrl(QUrl("http://server51214110.ngrok.io/login.php"));
+    QNetworkRequest req;
+    req.setUrl(QUrl(GlobalVars::api_logURLQString));
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
     QNetworkReply *reply = nam.post(req, postdata);
     connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     loop.exec();
 
-    QByteArray buffer = reply->readAll();
-    qDebug()<<" reply:: "<<buffer;
-    qDebug()<<"\n\n";
+    //QByteArray buffer = reply->readAll();
 
-    if (buffer.contains("success"))
+
+    QJsonDocument document = QJsonDocument::fromJson(reply->readAll());
+    QJsonObject buffer = document.object();
+
+    qDebug()<<" reply:: "<<buffer;
+    qDebug()<<"\n\n IsSuccessStatusCode:"<<buffer.value("IsSuccessStatusCode");
+    qDebug()<<"Access Token: "<<buffer.value("Model"); //.value("AccessToken");
+    qDebug()<<"\n\n ";
+
+    if (buffer.value("IsSuccessStatusCode") == QJsonValue(200))
     {
-        ui->lbl_LoginResults->setText("Server:"+buffer);
+        QJsonValue buffer1 = buffer.value("Model");
+        qDebug()<<" QJsonValue Model: "<<buffer1;
+        QJsonObject bufferModel = buffer1.toObject();
+        qDebug()<<"\n\n bufferModel : "<<bufferModel;
+        qDebug()<<"\n\n ";
+
+        GlobalVars::authorizedToken = bufferModel.value("AccessToken").toString();
+        buffer1 = bufferModel.value("UserInfo");
+        qDebug()<<" QJsonValue UserInfo: "<<buffer1;
+        bufferModel = buffer1.toObject();
+        qDebug()<<"\n\n bufferModel 2 : "<<bufferModel;
+        qDebug()<<"\n\n ";
+        GlobalVars::userInfo_creditDetails = bufferModel.value("Credit").toDouble();
+        GlobalVars::userInfo_HardwareKey = bufferModel.value("HardwareKey").toString();
+        GlobalVars::userInfo_UserName = bufferModel.value("UserName").toString();
+        //ui->lbl_LoginResults->setText("Server:" + GlobalVars::authorizedToken);
+
+        ui->lbl_LoginResults->setText("Login Sucessfull, Credit:" + QString::number(GlobalVars::userInfo_creditDetails, 'f', 2));
         ui->lbl_LoginResults->setStyleSheet("color:green;");
+
+
+
+        // ------------- Server Status Check ---------------------
+        qDebug()<<" \n\n Testing Server is online:";
+
+
+        postdata.clear();// = data.toJson();
+        postdata.append(QString("bearer="+ GlobalVars::authorizedToken+"&").toUtf8());
+        postdata.append(QString("Bearer="+ GlobalVars::authorizedToken +"&").toUtf8());
+        postdata.append(QString("Authorization="+ GlobalVars::authorizedToken +"&").toUtf8());
+        postdata.append(QString("authorization="+ GlobalVars::authorizedToken +"&").toUtf8());
+
+        //qDebug()<<" \n\n Post Data: "<<postdata;
+        /*
+        req.setUrl(QUrl(GlobalVars::api_serverStatusQString+"?"+postdata)); //+"?bearer="+GlobalVars::authorizedToken));
+        req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+        qDebug()<<" Server status Request: "<<req.url();
+        reply = nam.get(req); // post(req, postdata);
+        connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+        loop.exec();
+        document = QJsonDocument::fromJson(reply->readAll());
+        buffer = document.object();
+
+        qDebug()<<"Server online check reply:: "<<buffer<<"length : "<<buffer.size();
+        qDebug()<<"\n\n";
+        */
+
+        // ------------- Version Check ---------------------
+        req.setUrl(QUrl(GlobalVars::api_VersionQString+"?"+postdata)); //+"?Authorization="+GlobalVars::authorizedToken));
+        req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+        qDebug()<<" Version Check: "<<req.url();
+        reply = nam.get(req); //post(req, postdata);
+        connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+        loop.exec();
+        document = QJsonDocument::fromJson(reply->readAll());
+        buffer = document.object();
+        qDebug()<<"Version check reply:: "<<buffer<<"length : "<<buffer.size();
+        qDebug()<<"\n\n";
+
+
+
+
+
+
+
+
+
+
         timer_singleShot->start(3000);
         singleShotIndex = 0;
     }
-    if (buffer.toLower().contains("error"))
+    else
     {
-        ui->lbl_LoginResults->setText("Error: "+buffer);
+
+        ui->lbl_LoginResults->setText("Please Check your information.");
+        ui->lbl_LoginResults->setStyleSheet("color:red;");
+        GlobalVars::authorizedToken = "";
+    }
+
+    if (buffer.value("Error") == true)
+    {
+        ui->lbl_LoginResults->setText("Error: "+buffer.value("Error").toString());
         ui->lbl_LoginResults->setStyleSheet("color:red;");
     }
     else if(buffer.contains("404 Not Found"))
@@ -131,11 +211,46 @@ void MainWindow::on_pb_Login_clicked()
 
 
     saveNewSettings();
-    timer_singleShot->start(3000);
+    //timer_singleShot->start(3000);
     singleShotIndex = 0;
+
+}
+void MainWindow::on_pb_Close_2_clicked()
+{
+    on_pb_Close_clicked();
 }
 void MainWindow::on_pb_Close_clicked()
 {
+
+    backEndObj->thread()->quit();
+    metaModeClass[0]->thread()->quit();
+    metaModeClass[1]->thread()->quit();
+    metaModeClass[2]->thread()->quit();
+    metaModeClass[3]->thread()->quit();
+    metaModeClass[4]->thread()->quit();
+    metaModeClass[5]->thread()->quit();
+    metaModeClass[6]->thread()->quit();
+    metaModeClass[7]->thread()->quit();
+    backEndObj->thread()->wait();
+    metaModeClass[0]->thread()->wait();
+    metaModeClass[1]->thread()->wait();
+    metaModeClass[2]->thread()->wait();
+    metaModeClass[3]->thread()->wait();
+    metaModeClass[4]->thread()->wait();
+    metaModeClass[5]->thread()->wait();
+    metaModeClass[6]->thread()->wait();
+    metaModeClass[7]->thread()->wait();
+
+    backEndObj->thread()->deleteLater();
+    metaModeClass[0]->thread()->deleteLater();
+    metaModeClass[1]->thread()->deleteLater();
+    metaModeClass[2]->thread()->deleteLater();
+    metaModeClass[3]->thread()->deleteLater();
+    metaModeClass[4]->thread()->deleteLater();
+    metaModeClass[5]->thread()->deleteLater();
+    metaModeClass[6]->thread()->deleteLater();
+    metaModeClass[7]->thread()->deleteLater();
+    /*
     backEndObj->deleteLater();
     metaModeClass[0]->deleteLater();
     metaModeClass[1]->deleteLater();
@@ -144,10 +259,16 @@ void MainWindow::on_pb_Close_clicked()
     metaModeClass[4]->deleteLater();
     metaModeClass[5]->deleteLater();
     metaModeClass[6]->deleteLater();
-    metaModeClass[7]->deleteLater();
+    metaModeClass[7]->deleteLater(); */
 
     QApplication::quit();
 }
+void MainWindow::on_pb_CopyUniqueID_clicked()
+{
+    QClipboard *clip = QApplication::clipboard();
+    clip->setText(ui->lbl_SystemID->text(), QClipboard::Clipboard);
+}
+
 
 void MainWindow::seeSettingsFile()
 {
@@ -1223,20 +1344,23 @@ void MainWindow::on_cmb_PortNumber_D1_currentIndexChanged(int index)
 void MainWindow::on_cmb_DeviceModel_D1_currentIndexChanged(int index)
 {
     //qDebug()<<" META Device Model index :"<<index<<" txt:"<<ui->cmb_DeviceModel->currentText();
-    if (index == 1)
+    if (index == 1) //
     {
         GlobalVars::meta_projectName[metaTabUniversal] = "fiji";
         GlobalVars::meta_projectDataType[metaTabUniversal] = "1";
+        GlobalVars::meta_projectUnlockType[metaTabUniversal]  = "2";
     }
     else if (index == 2)
     {
         GlobalVars::meta_projectName[metaTabUniversal] = "bj";
         GlobalVars::meta_projectDataType[metaTabUniversal]  = "1";
+        GlobalVars::meta_projectUnlockType[metaTabUniversal]  = "2";
     }
     else
     {
         GlobalVars::meta_projectName[metaTabUniversal] = "malta";
         GlobalVars::meta_projectDataType[metaTabUniversal]  = "4";
+        GlobalVars::meta_projectUnlockType[metaTabUniversal]  = "5";
     }
     qDebug()<<" Device Model index :"<<index<<" txt:"<<ui->cmb_DeviceModel_D2->currentText()<<" ProjectName: "<<GlobalVars::meta_projectName[metaTabUniversal]<<" ProjectDataType: "<<GlobalVars::meta_projectDataType[metaTabUniversal]<<" SIM_Unlock:"<<GlobalVars::meta_projectUnlockType[metaTabUniversal];
 }
@@ -1949,4 +2073,14 @@ void MainWindow::on_pb_carrierFix_D1_clicked()
         emit tx_StartRepairing_metaMode(metaTabUniversal, true, Tool_META_CarrierFix);
     }
 }
+
+
+void MainWindow::on_pb_Minimize_clicked()
+{
+    this->setWindowState(Qt::WindowMinimized);
+}
+
+
+
+
 
