@@ -53,7 +53,7 @@ void Class_LogFile::writeToLog(QByteArray ba)
 
 
     QByteArray postdata;// = data.toJson();
-    postdata.append(QString("OperationId="+ QString::number(1) +"&").toUtf8());
+    postdata.append(QString("OperationId="+ QString::number(58) +"&").toUtf8());
     postdata.append(QString("Log="+ ba).toUtf8());
     qDebug()<<" \n\n ByteArray:"<<postdata<<"\n\n";
 
@@ -63,13 +63,14 @@ void Class_LogFile::writeToLog(QByteArray ba)
     QNetworkRequest req;
     req.setUrl(QUrl(GlobalVars::api_LogQString));
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
 
-    QNetworkReply *reply = nam.post(req, postdata);
+    QNetworkReply *reply = nam.post(req, postdata.toBase64());
     connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     loop.exec();
+    //qDebug()<<" Reply:: "<<reply->readAll();
 
-
-    QJsonDocument document = QJsonDocument::fromJson(reply->readAll());
+    QJsonDocument document = QJsonDocument::fromJson(QByteArray::fromBase64(reply->readAll()));
     QJsonObject buffer = document.object();
 
     qDebug()<<"Log reply:: "<<buffer;

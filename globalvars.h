@@ -121,6 +121,8 @@ public:
 
 
 
+    static QString api_MTKimeiGenerator;
+    static QString api_MTKserverAuthenticity;
     static QString api_logURLQString;
     static QString api_serverStatusQString;
     static QString api_VersionQString;

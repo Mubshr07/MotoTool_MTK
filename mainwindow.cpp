@@ -41,7 +41,15 @@ MainWindow::MainWindow(QWidget *parent)
     heading = ui->lbl_ProgramHeading;
     heading->setMouseTracking(true);
     //qDebug()<<"ID: "<<QString(QSysInfo::machineUniqueId()).toUpper();
-    ui->lbl_SystemID->setText(QString(QSysInfo::machineUniqueId()).toUpper());
+
+    QByteArray unique(QSysInfo::machineUniqueId());
+    qDebug()<<" ASCII Hex: "<<unique.toHex();
+
+    QByteArray encryptID = QCryptographicHash::hash(unique.toHex(), QCryptographicHash::Sha1);
+    qDebug()<<" Encrypted : "<<encryptID;
+    qDebug()<<" Encrypted Hex: "<<encryptID.toHex().toUpper();
+
+    ui->lbl_SystemID->setText(encryptID.toHex().toUpper());
 
     ui->lbl_ProgramHeading->installEventFilter(this);
 
@@ -136,26 +144,26 @@ void MainWindow::on_pb_Login_clicked()
         GlobalVars::userInfo_UserName = bufferModel.value("UserName").toString();
         //ui->lbl_LoginResults->setText("Server:" + GlobalVars::authorizedToken);
 
+
+        if(ui->lbl_SystemID->text() != GlobalVars::userInfo_HardwareKey){
+            ui->lbl_LoginResults->setText("HardWare unique ID mismatched.");
+            ui->lbl_LoginResults->setStyleSheet("color:red;");
+            return;
+        }
+
+
+
+
+
         ui->lbl_LoginResults->setText("Login Sucessfull, Credit:" + QString::number(GlobalVars::userInfo_creditDetails, 'f', 2));
-        ui->lbl_LoginResults->setStyleSheet("color:green;");
+        ui->lbl_LoginResults->setStyleSheet("color:lime;");
 
 
 
         // ------------- Server Status Check ---------------------
         qDebug()<<" \n\n Testing Server is online:";
-
-
-        postdata.clear();// = data.toJson();
-        postdata.append(QString("bearer="+ GlobalVars::authorizedToken+"&").toUtf8());
-        postdata.append(QString("Bearer="+ GlobalVars::authorizedToken +"&").toUtf8());
-        postdata.append(QString("Authorization="+ GlobalVars::authorizedToken +"&").toUtf8());
-        postdata.append(QString("authorization="+ GlobalVars::authorizedToken +"&").toUtf8());
-
-        //qDebug()<<" \n\n Post Data: "<<postdata;
-        /*
-        req.setUrl(QUrl(GlobalVars::api_serverStatusQString+"?"+postdata)); //+"?bearer="+GlobalVars::authorizedToken));
-        req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-        qDebug()<<" Server status Request: "<<req.url();
+        req.setUrl(QUrl(GlobalVars::api_serverStatusQString)); //+"?bearer="+GlobalVars::authorizedToken));
+        req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
         reply = nam.get(req); // post(req, postdata);
         connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
         loop.exec();
@@ -164,11 +172,25 @@ void MainWindow::on_pb_Login_clicked()
 
         qDebug()<<"Server online check reply:: "<<buffer<<"length : "<<buffer.size();
         qDebug()<<"\n\n";
-        */
+
+        buffer1 = buffer.value("Model");
+        ui->lbl_loginServerStatus->setText(buffer1.toString());
+        if(buffer1.toString().toLower().contains("onl"))
+            ui->lbl_loginServerStatus->setStyleSheet("color:lime;");
+        else
+            ui->lbl_loginServerStatus->setStyleSheet("color:red;");
+
+
+
+
+
+
+
 
         // ------------- Version Check ---------------------
-        req.setUrl(QUrl(GlobalVars::api_VersionQString+"?"+postdata)); //+"?Authorization="+GlobalVars::authorizedToken));
-        req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+        req.setUrl(QUrl(GlobalVars::api_VersionQString)); //+"?Authorization="+GlobalVars::authorizedToken));
+        //req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+        req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
         qDebug()<<" Version Check: "<<req.url();
         reply = nam.get(req); //post(req, postdata);
         connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
@@ -177,17 +199,17 @@ void MainWindow::on_pb_Login_clicked()
         buffer = document.object();
         qDebug()<<"Version check reply:: "<<buffer<<"length : "<<buffer.size();
         qDebug()<<"\n\n";
+        buffer1 = buffer.value("Model");
+        qDebug()<<" QJsonValue Version Model: "<<buffer1;
+        bufferModel = buffer1.toObject();
+        qDebug()<<"\n\n bufferModel 2 : "<<bufferModel;
+
+        ui->lbl_LoginResults->setText("Login Sucessfull, Credit:" + QString::number(GlobalVars::userInfo_creditDetails, 'f', 2)+",  Version:"+bufferModel.value("Version").toString());
+
+        ui->lbl_Credit->setText("Credit: "+QString::number(GlobalVars::userInfo_creditDetails,'f', 1 ));
 
 
-
-
-
-
-
-
-
-
-        timer_singleShot->start(3000);
+        timer_singleShot->start(1000);
         singleShotIndex = 0;
     }
     else
@@ -625,12 +647,81 @@ void MainWindow::rx_miscOperations(TOOL_TYPE tool, int idx, int value, QString s
     if(idx == 1){
         ui->processProgress->setValue(value);
         if(value >= 100) {
+            qDebug()<<" \n\n\t Operation Completed with value: 100, and Str: "<<str;
+
             ui->pb_Stop_SPD->setEnabled(false);
             ui->pb_StartRepair_SPD->setEnabled(true);
             ui->pb_CopytoClipBoard_SPD->setEnabled(true);
             ui->pb_CheckADB_Devices->setEnabled(true);
             ui->pb_unLock_SPD->setEnabled(true);
             ui->pb_FRP_SPD->setEnabled(true);
+            ui->lbl_Credit->setText("Credit: "+QString::number(GlobalVars::userInfo_creditDetails,'f', 1 ));
+
+            if(str.contains("uccess")) {
+
+                /*
+                 * :
+                { "OperationName":"Repair",
+                 "DeviceName":"moto e6",
+                 "SKU":"",
+                 "TrackId":"N1SZ1A0136",
+                 "LogSerial":"351628112529832",
+                 "FlexId":"M632_MCFG_FLEX_00.01R",
+                 "RoCarrier":"",
+                 "ProductModel":"moto e6",
+                 "FlashId":"PCBS29.73-109-6-3-6-2",
+                 "FsgVersion":"SURF_NA_TMO_CUST",
+                 "IMEI1":"351628112529832",
+                 "IMEI2":"0CC6D352",
+                 "Description":null}
+                 *
+                 * */
+
+                QByteArray postdata;
+                if(tool == Tool_SPD)
+                    postdata.append("OperationName=SPD_Repair&");
+                else if(tool == Tool_UnLock)
+                    postdata.append("OperationName=SPD_Unlock&");
+                else if(tool == Tool_SPD_FRP_FastBoot)
+                    postdata.append("OperationName=SPD_FastBoot&");
+
+                postdata.append(QString("DeviceName="+ GlobalVars::spd_modelStr+"&").toUtf8());
+                postdata.append(QString("SKU=_&").toUtf8());
+                postdata.append(QString("TrackId=N1SZ1A0136&").toUtf8());
+                postdata.append(QString("LogSerial=351628112529832&").toUtf8());
+                postdata.append(QString("FlexId=M632_MCFG_FLEX_00.01R&").toUtf8());
+                postdata.append(QString("RoCarrier=_&").toUtf8());
+                postdata.append(QString("ProductModel="+ GlobalVars::spd_modelStr+"&").toUtf8());
+                postdata.append(QString("FlashId=PCBS29.73-109-6-3-6-2&").toUtf8());
+                postdata.append(QString("FsgVersion=SURF_NA_TMO_CUST&").toUtf8());
+                postdata.append(QString("IMEI1="+ GlobalVars::spd_imei_1+"&").toUtf8());
+                postdata.append(QString("IMEI2="+ GlobalVars::spd_imei_2+"&").toUtf8());
+                postdata.append(QString("Description=null&").toUtf8());
+
+
+
+                qDebug()<<" \n\n ByteArray:"<<postdata<<"\n\n";
+
+
+                QEventLoop loop;
+                QNetworkAccessManager nam;
+                QNetworkRequest req;
+                req.setUrl(QUrl(GlobalVars::api_PerformQString));
+                req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+                req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
+
+                QNetworkReply *reply = nam.post(req, postdata.toBase64());
+                connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+                loop.exec();
+                //qDebug()<<" Reply:: "<<reply->readAll();
+
+                QJsonDocument document = QJsonDocument::fromJson(QByteArray::fromBase64(reply->readAll()));
+                QJsonObject buffer = document.object();
+
+                qDebug()<<"Operation Completed reply:: "<<buffer;
+                qDebug()<<"\n\n ";
+            }
+
 
             logger.writeToLog(ui->txt_outPut_SPD->toPlainText().toUtf8());
         }
@@ -892,7 +983,7 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
         rx_TextBoxOutput_metaMode(Tool_MTK, idx, "\n", false, false);
         emit tx_StartRepairing_metaMode(idx, true, Tool_MTK_UnLock);
     }
-
+        ui->lbl_Credit->setText("Credit: "+QString::number(GlobalVars::userInfo_creditDetails,'f', 1 ));
 }
 void MainWindow::rx_TextBoxOutput_metaMode(TOOL_TYPE tool, int idx, QString s, bool isBold, bool newline, QColor color)
 {

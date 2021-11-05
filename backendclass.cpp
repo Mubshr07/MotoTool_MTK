@@ -507,7 +507,7 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
 
 void BackEndClass::rx_timer_singleShot_elapsed()
 {
-    emit tx_miscOperations(currentToolType, 1, 100, "");
+    emit tx_miscOperations(currentToolType, 1, 100, "No Device Found");
     emit tx_TextBoxOutput(currentToolType, 1, QString(" No Device Found. "), true, false, Qt::red);
 }
 
@@ -584,7 +584,7 @@ void BackEndClass::getConnectedDevices_andSendThemGUI(QByteArray ba)
             {
                 adbDevicesRaw.clear();
                 emit tx_TextBoxOutput(Tool_SPD, 1, "Device is not authorized. Please enable the usb debuging mode.", false, false, Qt::red);
-                emit tx_miscOperations(Tool_SPD,1, 100, "");
+                emit tx_miscOperations(Tool_SPD,1, 100, "Device is not authorized");
                 adbProcess->reset();
             }
             currentADB = ADB_Model;
@@ -593,7 +593,7 @@ void BackEndClass::getConnectedDevices_andSendThemGUI(QByteArray ba)
             emit tx_miscOperations(currentToolType, 1, 15, "");
         } else {
             emit tx_TextBoxOutput(currentToolType, 1, "Error in Finding Devices, Please re-Plug the device \n ---------------------------------", false, false, Qt::red);
-            emit tx_miscOperations(currentToolType, 1, 100, "");
+            emit tx_miscOperations(currentToolType, 1, 100, "Error in Finding Devices");
         }
     } else {
         if(ba.contains("List of devices attached")){
@@ -619,7 +619,7 @@ void BackEndClass::getConnectedDevices_andSendThemGUI(QByteArray ba)
             {
                 adbDevicesRaw.clear();
                 emit tx_TextBoxOutput(Tool_SPD, 1, "Device is not authorized. Please enable the usb debuging mode.", false, false, Qt::red);
-                emit tx_miscOperations(Tool_SPD,1, 100, "");
+                emit tx_miscOperations(Tool_SPD,1, 100, "Device is not authorized");
                 adbProcess->reset();
             }
 
@@ -632,7 +632,7 @@ void BackEndClass::getConnectedDevices_andSendThemGUI(QByteArray ba)
         else
         {
             emit tx_TextBoxOutput(currentToolType, 1, "Error in Finding Devices, Please re-Plug the device \n ---------------------------------", false, false, Qt::red);
-            emit tx_miscOperations(currentToolType, 1, 100, "");
+            emit tx_miscOperations(currentToolType, 1, 100, "Error in Finding Devices");
         }
     }
 }
@@ -704,18 +704,18 @@ void BackEndClass::getADB_SerialNumber(QByteArray ba)
             }
             else
             {
-                emit tx_miscOperations(Tool_SPD, 1,  100, "");
+                emit tx_miscOperations(Tool_SPD, 1,  100, "success");
                 emit tx_TextBoxOutput(Tool_SPD, 1, "---------------------------------", false, false, Qt::white);
             }
         }
         else if(GlobalVars::spd_modelStr.contains("E6s XT2053")||GlobalVars::spd_modelStr.contains("G8 Power Lite XT2055")||GlobalVars::spd_modelStr.contains("E7 Play XT2095")) {
 
-            emit tx_miscOperations(Tool_SPD, 1,  100, "");
+            emit tx_miscOperations(Tool_SPD, 1,  100, "success");
             emit tx_TextBoxOutput(Tool_SPD, 1, "---------------------------------", false, false, Qt::white);
         }
         else if(GlobalVars::spd_modelStr.contains("G20")) {
 
-            emit tx_miscOperations(Tool_SPD, 1,  100, "");
+            emit tx_miscOperations(Tool_SPD, 1,  100, "success");
             emit tx_TextBoxOutput(Tool_SPD, 1, "---------------------------------", false, false, Qt::white);
         }
     }
@@ -732,7 +732,7 @@ void BackEndClass::getADB_AssignPortCmd(QByteArray ba)
         emit tx_miscOperations(Tool_SPD, 1,  80, "");
     }
     else {
-        emit tx_miscOperations(Tool_SPD, 1, 100, "");
+        emit tx_miscOperations(Tool_SPD, 1, 100, "success");
     }
 }
 void BackEndClass::getADB_Original_imei(QByteArray ba)
@@ -774,7 +774,7 @@ void BackEndClass::getADB_rebootCommand(QByteArray ba)
             }
             else
             {
-                emit tx_miscOperations(Tool_SPD, 1,  100, "");
+                emit tx_miscOperations(Tool_SPD, 1,  100, "success");
                 emit tx_TextBoxOutput(Tool_SPD, 1, "---------------------------------", false, false, Qt::white);
             }
         }
@@ -788,7 +788,7 @@ void BackEndClass::getADB_ChinoeIMEICMTool(QByteArray ba)
     if(ba.contains("Connect device fail")||ba.contains("Connect To cellphone = Fail"))
     {
         emit tx_TextBoxOutput(Tool_SPD, 1, "Error: Device not connected ", false, false, Qt::red);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "");
+        emit tx_miscOperations(Tool_SPD, 1, 100, "Error");
         return;
     }
 
@@ -842,7 +842,7 @@ void BackEndClass::getADB_ChinoeIMEICMTool(QByteArray ba)
 
         if(nowForSecondIMEI){
             emit tx_TextBoxOutput(Tool_SPD, 1, "Task successfuly Completed", false, false, GlobalVars::txtOutPutColor);
-            emit tx_miscOperations(Tool_SPD, 1, 100, "");
+            emit tx_miscOperations(Tool_SPD, 1, 100, "success");
         }
         else
         {
@@ -880,7 +880,7 @@ void BackEndClass::get_ChinoeDirectory1(QByteArray ba)
 
         if(nowForSecondIMEI){
             emit tx_TextBoxOutput(Tool_SPD, 1, "Task successfuly Completed", false, false, GlobalVars::txtOutPutColor);
-            emit tx_miscOperations(Tool_SPD, 1, 100, "");
+            emit tx_miscOperations(Tool_SPD, 1, 100, "success");
         }
         else
         {
@@ -917,7 +917,7 @@ void BackEndClass::get_ChinoeDirectory2(QByteArray ba)
 
         if(nowForSecondIMEI){
             emit tx_TextBoxOutput(Tool_SPD, 1, "Task successfuly Completed", false, false, GlobalVars::txtOutPutColor);
-            emit tx_miscOperations(Tool_SPD, 1, 100, "");
+            emit tx_miscOperations(Tool_SPD, 1, 100, "success");
         }
         else
         {
@@ -943,7 +943,7 @@ void BackEndClass::get_ChinoeDirectory3(QByteArray ba)
         // finding , after Track id
         indx = ba.indexOf(",");
         required_data = ba.left(indx);
-        emit tx_TextBoxOutput(Tool_SPD, 1, QString(" Tracking ID: "+ required_data), false, false, GlobalVars::txtOutPutColor);
+        emit tx_TextBoxOutput(Tool_SPD, 1, QString("Tracking ID: "+ required_data), false, false, GlobalVars::txtOutPutColor);
     }
     if(ba.contains("Write Simlock = "))
     {
@@ -961,17 +961,17 @@ void BackEndClass::get_ChinoeDirectory3(QByteArray ba)
     if(ba.contains("Total Test Result = PASS"))
     {
         emit tx_TextBoxOutput(Tool_SPD, 1, "Task successfuly Completed", false, false, GlobalVars::txtOutPutColor);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "");
+        emit tx_miscOperations(Tool_SPD, 1, 100, "success");
     }
     else if(ba.contains("Total Test Result = FAIL"))
     {
         emit tx_TextBoxOutput(Tool_SPD, 1, "Test Result Failed", false, false, Qt::red);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "");
+        emit tx_miscOperations(Tool_SPD, 1, 100, "success");
     }
     else if(ba.contains("Connect To cellphone = Fail"))
     {
         emit tx_TextBoxOutput(Tool_SPD, 1, "Connect To cellphone = Fail", false, false, Qt::red);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "");
+        emit tx_miscOperations(Tool_SPD, 1, 100, "success");
     }
 
 }
@@ -1093,7 +1093,7 @@ void BackEndClass::get_FRP_Fast_Reboot(QByteArray ba)
         emit tx_miscOperations(currentToolType, 1, 90, "");
         emit tx_TextBoxOutput(currentToolType, 1, QString("Rebooting : OK"), false, false, GlobalVars::txtOutPutColor);
     }
-    emit tx_miscOperations(currentToolType, 1, 100, "");
+    emit tx_miscOperations(currentToolType, 1, 100, "success");
     emit tx_TextBoxOutput(currentToolType, 1, QString("FRP Process: Sucessfull."), true, false, GlobalVars::txtOutPutColor);
 
 }
@@ -1126,12 +1126,12 @@ void BackEndClass::getADB_UnLockSIMTool(QByteArray ba)
     if(ba.contains("Work do"))
     {
         emit tx_TextBoxOutput(Tool_SPD, 1, "Task successfuly Completed", false, false, GlobalVars::txtOutPutColor);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "");
+        emit tx_miscOperations(Tool_SPD, 1, 100, "success");
     }
     else
     {
         emit tx_TextBoxOutput(Tool_SPD, 1, "Task Failed", false, false, Qt::red);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "");
+        emit tx_miscOperations(Tool_SPD, 1, 100, "Error");
     }
 
 }
@@ -1145,7 +1145,7 @@ void BackEndClass::rx_ADB_ErrorReceived()
     }
     if(spd_commandError.contains("adb.exe: no devices/emulators found")){
         emit tx_TextBoxOutput(Tool_SPD, 1, "No Device Found.", true, false, Qt::red);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "");
+        emit tx_miscOperations(Tool_SPD, 1, 100, "No Device");
     }
 
     if(currentToolType == Tool_SPD_FRP_FastBoot)
@@ -1268,13 +1268,13 @@ bool BackEndClass::getServerFastBoot_File()
             timer_SPDTool->start(500);
         } else {
             qDebug()<<" Error in Writing FastBoot File.";
-            emit tx_miscOperations(currentToolType, 1, 100, "");
+            emit tx_miscOperations(currentToolType, 1, 100, "Error");
             emit tx_TextBoxOutput(currentToolType, 1, QString("Error in FastBoot File."), false, false, Qt::red);
             return false;
         }
         frpF.close();
     } else {
-        emit tx_miscOperations(currentToolType, 1, 100, "");
+        emit tx_miscOperations(currentToolType, 1, 100, "Error");
         emit tx_TextBoxOutput(currentToolType, 1, QString("Error in FastBoot File."), false, false, Qt::red);
         return false;
     }
@@ -1331,7 +1331,7 @@ bool BackEndClass::getServerIMEInumber_updateGlobal()
 
         if (buffer.toLower().contains("fail"))
         {
-            emit tx_miscOperations(currentToolType, 1, 100, "");
+            emit tx_miscOperations(currentToolType, 1, 100, "Error iMEI");
             emit tx_TextBoxOutput(currentToolType, 1, "Failed to get IMEI from Server", true, false, QColor::fromRgb(255, 192, 192));
             return false;
         }
@@ -1339,7 +1339,7 @@ bool BackEndClass::getServerIMEInumber_updateGlobal()
         {
             int idx = buffer.indexOf("&");
             if(idx < 5) {
-                emit tx_miscOperations(currentToolType, 1, 100, "");
+                emit tx_miscOperations(currentToolType, 1, 100, "Error IMEI");
                 emit tx_TextBoxOutput(currentToolType, 1, "Faided to get IMEI from Server", true, false, QColor::fromRgb(255, 192, 192));
                 return false;
             }

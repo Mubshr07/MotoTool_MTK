@@ -42,6 +42,8 @@ QString GlobalVars::userInfo_UserName = "";
 
 
 
+QString GlobalVars::api_MTKimeiGenerator = QString("http://phpstack-682336-2247161.cloudwaysapps.com/api/MTK/imei");
+QString GlobalVars::api_MTKserverAuthenticity = QString("http://phpstack-682336-2247161.cloudwaysapps.com/api/MTK/auth");
 QString GlobalVars::api_logURLQString = QString("http://phpstack-653970-2162634.cloudwaysapps.com/api/login");
 QString GlobalVars::api_serverStatusQString = QString("http://phpstack-653970-2162634.cloudwaysapps.com/api/status");
 QString GlobalVars::api_VersionQString = QString("http://phpstack-653970-2162634.cloudwaysapps.com/api/version");
