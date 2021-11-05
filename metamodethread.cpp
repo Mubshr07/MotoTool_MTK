@@ -136,6 +136,69 @@ void MetaModeThread::check_CarrierFix_Cmd_outPut(QString str)
 
     if(str.contains("Motorola Modem Meta Tool Passed."))
     {
+
+        QByteArray postdata;
+
+        QJsonObject obj;
+        obj["OperationName"] = "CarrierFix";
+        obj["DeviceName"] = GlobalVars::meta_modelStr[generalIndex];
+        QJsonDocument doc(obj);
+        postdata = doc.toJson();
+        //qDebug()<<" \n\n ByteArray:"<<postdata<<" Base64::"<<postdata.toBase64();
+        if(processStartStop ==  false){
+            return;
+        }
+        QEventLoop loop;
+        QNetworkAccessManager nam;
+        QNetworkRequest req;
+        req.setUrl(QUrl(GlobalVars::api_MTKcharges));
+        req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+        req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
+
+        QNetworkReply *reply = nam.post(req, postdata.toBase64());
+        connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+        loop.exec();
+        if(processStartStop ==  false){
+            return;
+        }
+        QByteArray buffer = reply->readAll();
+        //qDebug()<<" reply:: "<<buffer;
+        authenReply = QByteArray::fromBase64(buffer);
+        reply->deleteLater();
+        qDebug()<<"\n\n\n CarrierFix response_data::"<<authenReply;
+        qDebug()<<"\n\n";
+
+        QJsonDocument document = QJsonDocument::fromJson(authenReply);
+        QJsonObject jsonBuffer = document.object();
+
+        //qDebug()<<"Server Authentication reply:: "<<jsonBuffer;
+        qDebug()<<" isError: "<<jsonBuffer.value("isError");
+        qDebug()<<" Model: "<<jsonBuffer.value("Model");
+        qDebug()<<" Message: "<<jsonBuffer.value("Message");
+        qDebug()<<"\n\n ";
+
+
+
+        if (jsonBuffer.value("isError").toBool() == false)
+        {
+            QJsonValue buffer1 = jsonBuffer.value("Model");
+            //qDebug()<<" QJsonValue Model: "<<buffer1;
+            QJsonObject bufferModel = buffer1.toObject();
+            GlobalVars::operationID = bufferModel.value("OperationId").toDouble();
+            GlobalVars::userInfo_creditDetails = bufferModel.value("Credit").toDouble();
+            qDebug()<<" operationID : "<<GlobalVars::operationID;
+            qDebug()<<"\n\n ";
+        }
+        if (jsonBuffer.value("isError").toBool() == true)
+        {
+            qDebug()<<"Error Message: "<<jsonBuffer.value("Message");
+            emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
+            emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Server Process Failed", true, false, QColor::fromRgb(255, 192, 192));
+            return;
+        }
+
+
+
         emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex,"Getting Authorization From Server: OK", false, false , GlobalVars::txtOutPutColor);
         emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex, QString("Model: " + GlobalVars::meta_modelStr[generalIndex]), false, false , GlobalVars::txtOutPutColor);
         emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex,"Invalid Carrier Fixed : OK", false, false , GlobalVars::txtOutPutColor);
@@ -328,6 +391,7 @@ void MetaModeThread::rx_timer_Meta_singleShot()
         break;
     }
     case MMM_AuthenticationBytes:{
+        qDebug()<<" writing Authentication bytes ";
         metaProcess->write(authenReply);
         metaProcess->write(" \n");
         metaProcess->closeWriteChannel();
@@ -337,6 +401,7 @@ void MetaModeThread::rx_timer_Meta_singleShot()
         break;
     }
     case MMM_OK_AfterAuthenticationBytes:{
+        qDebug()<<" writing **OK** after Authentication bytes ";
         metaProcess->write("OK ");
         metaProcess->write("\n");
         metaProcess->closeWriteChannel();
@@ -444,37 +509,42 @@ void MetaModeThread::rx_timer_Meta_singleShot()
 
 void MetaModeThread::getAuthenticationFromServer(QString strData, QString strIMEI)
 {
-    qDebug()<<"getAuthenticationFromServer ::  Data:"<<strData<<" IMEI:"<<strIMEI;
+    //qDebug()<<"getAuthenticationFromServer ::  Data:"<<strData<<" IMEI:"<<strIMEI;
 
-    QByteArray postdata;// = data.toJson();
-    postdata.append(QString("IMEI="+ strIMEI+"&").toUtf8());
-    postdata.append(QString("DATA="+ strData+"&").toUtf8());
-    postdata.append(QString("pname="+ GlobalVars::meta_projectName[generalIndex]+"&").toUtf8());
+    QByteArray postdata;
+
+    QJsonObject obj;
+    obj["data"] =  QString(strData);
+    obj["imei"] = strIMEI;
+    obj["pname"] = GlobalVars::meta_projectName[generalIndex];
     if(currentToolType == Tool_MTK){
-        postdata.append(QString("TYPE="+ GlobalVars::meta_projectDataType[generalIndex]+"&").toUtf8());
+        obj["type"] = GlobalVars::meta_projectDataType[generalIndex];
+        obj["OperationName"] = "repairmtk";
     }
     else if(currentToolType == Tool_MTK_UnLock){
-        postdata.append(QString("TYPE="+ GlobalVars::meta_projectUnlockType[generalIndex]+"&").toUtf8());
+        obj["type"] = GlobalVars::meta_projectUnlockType[generalIndex];
+        obj["OperationName"] = "Unlockmtk";
     }
-    //postdata.append("sysID="+QSysInfo::machineUniqueId());
+    obj["DeviceName"] = GlobalVars::meta_modelStr[generalIndex];
+    QJsonDocument doc(obj);
+    postdata = doc.toJson();
+
 
     emit tx_miscOperations_metaMode(currentToolType, generalIndex, 30, "");
     emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, QString("Model: "+GlobalVars::meta_modelStr[generalIndex]), false, false, GlobalVars::txtOutPutColor);
     //qDebug()<<" Json Object: "<<data<<" \n\n ByteArray:"<<postdata;
-    qDebug()<<" \n\n ByteArray:"<<postdata;
+    //qDebug()<<" \n\n ByteArray:"<<postdata<<" Base64::"<<postdata.toBase64();
     if(processStartStop ==  false){
         return;
     }
     QEventLoop loop;
     QNetworkAccessManager nam;
-    QNetworkRequest req; //(QUrl("https://server51214110.ngrok.io/auth.php"));
-    QSslConfiguration config = QSslConfiguration::defaultConfiguration();
-    //config.setProtocol(QSsl::SslV2);
-    //req.setSslConfiguration(config);
-    req.setUrl(QUrl("http://server51214110.ngrok.io/auth.php"));
+    QNetworkRequest req;
+    req.setUrl(QUrl(GlobalVars::api_MTKserverAuthenticity));
     req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
 
-    QNetworkReply *reply = nam.post(req, postdata);
+    QNetworkReply *reply = nam.post(req, postdata.toBase64());
     connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     loop.exec();
     if(processStartStop ==  false){
@@ -487,30 +557,47 @@ void MetaModeThread::getAuthenticationFromServer(QString strData, QString strIME
     }
     QByteArray buffer = reply->readAll();
     //qDebug()<<" reply:: "<<buffer;
-    authenReply = buffer;
+    authenReply = QByteArray::fromBase64(buffer);
     reply->deleteLater();
     if(processStartStop ==  false){
         return;
     }
-    qDebug()<<"\n\n\n response_data::"<<authenReply;
-    qDebug()<<"\n\n";
 
-    if (authenReply.contains("success"))
+
+    //qDebug()<<"\n\n\n Server Authentication response_data::"<<authenReply;
+    //qDebug()<<"\n\n";
+
+    QJsonDocument document = QJsonDocument::fromJson(authenReply);
+    QJsonObject jsonBuffer = document.object();
+
+    //qDebug()<<"Server Authentication reply:: "<<jsonBuffer;
+    qDebug()<<" isError: "<<jsonBuffer.value("isError");
+    qDebug()<<" Model: "<<jsonBuffer.value("Model");
+    qDebug()<<"\n\n ";
+
+
+
+    if (jsonBuffer.value("isError").toBool() == false)
     {
-        authenReply = authenReply.replace("success: ", "");
+        QJsonValue buffer1 = jsonBuffer.value("Model");
+        //qDebug()<<" QJsonValue Model: "<<buffer1;
+        QJsonObject bufferModel = buffer1.toObject();
+        GlobalVars::operationID = bufferModel.value("OperationId").toDouble();
+        //qDebug()<<" OperationId 444 : "<<bufferModel.value("OperationId");
+        authenReply = bufferModel.value("Auth").toString().toUtf8();
+        GlobalVars::userInfo_creditDetails = bufferModel.value("Credit").toDouble();
+        qDebug()<<"\n\n authenReply : "<<authenReply;
+        qDebug()<<" authenticationID : "<<GlobalVars::operationID;
+        qDebug()<<"\n\n ";
     }
-    if (authenReply.toLower().contains("error"))
+    if (jsonBuffer.value("isError").toBool() == true)
     {
+        qDebug()<<"Error Message: "<<jsonBuffer.value("Message");
         emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
         emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Process Failed", true, false, QColor::fromRgb(255, 192, 192));
         return;
     }
-    if (authenReply.toLower().contains("fail"))
-    {
-        emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
-        emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Process Failed", true, false, QColor::fromRgb(255, 192, 192));
-        return;
-    }
+
     emit tx_miscOperations_metaMode(currentToolType, generalIndex, 60, "");
     if(currentToolType == Tool_MTK){
         emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, QString("Writing ImeI: OK"), false, false, GlobalVars::txtOutPutColor);
@@ -524,15 +611,16 @@ bool MetaModeThread::getServerIMEInumber_updateGlobal()
 {
     if(!GlobalVars::meta_manual_imei_bool[generalIndex])
     {
-        QByteArray postdata;// = data.toJson();
+        QByteArray postdata;
         postdata.append(QString("model="+GlobalVars::meta_projectName[generalIndex]+"&").toUtf8());
         postdata.append(QString("simCode="+QString(GlobalVars::meta_dual_imei_bool[generalIndex]? "ds":"ss")).toUtf8());
 
-        QByteArray encypted;
-        encypted.append("encrypt=2&");
-        encypted.append(QString("data="+QCryptographicHash::hash(postdata, QCryptographicHash::Sha3_256).toUpper().toHex()).toUtf8());
-
-        qDebug()<<" \n\n IMEI ByteArray:"<<postdata<<" \n Encrypted: "<<encypted;
+        QJsonObject obj;
+        obj["data"] =  QString(QCryptographicHash::hash(postdata, QCryptographicHash::Sha3_256).toUpper().toHex());
+        obj["encrypt"] = "2";
+        QJsonDocument doc(obj);
+        QByteArray data = doc.toJson();
+        //qDebug()<<" \n\n IMEI ByteArray:"<<data <<" \n Base64: "<<data.toBase64();
 
         if(processStartStop ==  false){
             return false;
@@ -540,11 +628,13 @@ bool MetaModeThread::getServerIMEInumber_updateGlobal()
         QEventLoop loop;
         QNetworkAccessManager nam;
         QNetworkRequest req;
-        req.setUrl(QUrl("http://server51214110.ngrok.io/imeiGenerator.php"));
+        req.setUrl(QUrl(GlobalVars::api_MTKimeiGenerator));
+        //req.setUrl(QUrl("http://server51214110.ngrok.io/imeiGenerator.php"));
         //req.setUrl((QUrl("http://server51214110.ngrok.io/imeiGenerator.php")));
         req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+        req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
 
-        QNetworkReply *reply = nam.post(req, encypted);
+        QNetworkReply *reply = nam.post(req, data.toBase64());
         connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
         loop.exec();
         if(processStartStop ==  false){
@@ -559,43 +649,71 @@ bool MetaModeThread::getServerIMEInumber_updateGlobal()
         if(processStartStop ==  false){
             return false;
         }
-        qDebug()<<"\n\n\n IMEI response_data::"<<buffer;
-        qDebug()<<"\n\n";
+        buffer = QByteArray::fromBase64(buffer);
+        //qDebug()<<"\n\n\n IMEI response_data::"<<buffer;
+        //qDebug()<<"\n\n";
 
-        if (buffer.toLower().contains("fail"))
+        QJsonDocument document = QJsonDocument::fromJson(buffer);
+        QJsonObject jsonBuffer = document.object();
+
+        //qDebug()<<" reply:: "<<jsonBuffer;
+        qDebug()<<" isError: "<<jsonBuffer.value("isError"); //.value("AccessToken");
+        qDebug()<<"\n\n ";
+
+        if (jsonBuffer.value("isError").toBool() == true)
         {
             emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
-            emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Faided to get IMEI from Server", true, false, QColor::fromRgb(255, 192, 192));
+            emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Faided to get IMEI-1 from Server", true, false, QColor::fromRgb(255, 192, 192));
             return false;
         }
         if (GlobalVars::meta_dual_imei_bool[generalIndex]) //(buffer.toLower().contains("&"))
         {
-            int idx = buffer.indexOf("&");
-            if(idx < 5) {
-                emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
-                emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Faided to get IMEI from Server", true, false, QColor::fromRgb(255, 192, 192));
+            QJsonValue buffer1 = jsonBuffer.value("Model");
+            GlobalVars::meta_imei_1[generalIndex] = buffer1.toString();
+            /*
+            req.setUrl(QUrl(GlobalVars::api_MTKimeiGenerator));
+            req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+            req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
+            */
+            reply = nam.post(req, data.toBase64());
+            connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+            loop.exec();
+            if(processStartStop ==  false){
                 return false;
             }
-            GlobalVars::meta_imei_1[generalIndex] = buffer.left(idx);
-            buffer.remove(0, (idx+1));
-            if(buffer.length() > 5){
-
-                idx = buffer.indexOf("\\");
-                qDebug()<<" second IMEI is: "<<buffer<<" idx: "<<idx;
-                if(idx <= 0)
-                {
-                    GlobalVars::meta_imei_2[generalIndex] = buffer;
-                }
-                else
-                {
-                    GlobalVars::meta_imei_2[generalIndex] = buffer.left(idx);
-                }
+            emit tx_miscOperations_metaMode(currentToolType, generalIndex, 40, "");
+            emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, QString("Geting IMEI-2 from Server: OK"), false, false, GlobalVars::txtOutPutColor);
+            QByteArray buffer = reply->readAll();
+            reply->deleteLater();
+            if(processStartStop ==  false){
+                return false;
             }
+            buffer = QByteArray::fromBase64(buffer);
+            qDebug()<<"\n\n\n IMEI-2 response_data::"<<buffer;
+            //qDebug()<<"\n\n";
+
+            document = QJsonDocument::fromJson(buffer);
+            jsonBuffer = document.object();
+
+            qDebug()<<" reply 2:: "<<jsonBuffer;
+            qDebug()<<" isError: "<<jsonBuffer.value("isError"); //.value("AccessToken");
+            qDebug()<<"\n\n ";
+
+            if (jsonBuffer.value("isError").toBool() == true) {
+                emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
+                emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Faided to get IMEI-2 from Server", true, false, QColor::fromRgb(255, 192, 192));
+                return false;
+            }
+            QJsonValue imei2 = jsonBuffer.value("Model");
+            GlobalVars::meta_imei_2[generalIndex] = imei2.toString();
         }
         else
-        {
-            GlobalVars::meta_imei_1[generalIndex] = buffer;
+        {            
+            QJsonValue buffer1 = jsonBuffer.value("Model");
+            GlobalVars::meta_imei_1[generalIndex] = buffer1.toString();
         }
+
+        qDebug()<<"****** IMEI-1: "<<GlobalVars::meta_imei_1[generalIndex]<<" IMEI-2:"<<GlobalVars::meta_imei_2[generalIndex];
         //qDebug()<<" Writing this code in cmd: "<<authenReply;
     }
 

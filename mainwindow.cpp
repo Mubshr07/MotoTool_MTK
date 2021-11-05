@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     this->setWindowFlags(Qt::FramelessWindowHint);
-    this->setFixedSize(650, 450);
+    this->setFixedSize(550, 450);
     //this->setFixedSize(800, 600);
 
     logger.rx_initialFileFolders();
@@ -140,7 +140,7 @@ void MainWindow::on_pb_Login_clicked()
         qDebug()<<"\n\n bufferModel 2 : "<<bufferModel;
         qDebug()<<"\n\n ";
         GlobalVars::userInfo_creditDetails = bufferModel.value("Credit").toDouble();
-        GlobalVars::userInfo_HardwareKey = bufferModel.value("HardwareKey").toString();
+        GlobalVars::userInfo_HardwareKey = bufferModel.value("MTKHardwareKey").toString();
         GlobalVars::userInfo_UserName = bufferModel.value("UserName").toString();
         //ui->lbl_LoginResults->setText("Server:" + GlobalVars::authorizedToken);
 
@@ -858,7 +858,9 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
             ui->pb_carrierFix_D1->setEnabled(true);
             if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success" && GlobalVars::meta_unLock_bool[idx]) {
+            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
+                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
+            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
             }
         }
@@ -875,9 +877,12 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
 
             if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success" && GlobalVars::meta_unLock_bool[idx]) {
+            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }        }
+            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
+                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
+            }
+        }
         break;
     }
     case 2:{
@@ -891,9 +896,12 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
 
             if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success" && GlobalVars::meta_unLock_bool[idx]) {
+            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }        }
+            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
+                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
+            }
+        }
         break;
     }
     case 3:{
@@ -907,9 +915,12 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
 
             if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success" && GlobalVars::meta_unLock_bool[idx]) {
+            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }        }
+            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
+                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
+            }
+        }
         break;
     }
     case 4:{
@@ -923,9 +934,12 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
 
             if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success" && GlobalVars::meta_unLock_bool[idx]) {
+            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }        }
+            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
+                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
+            }
+        }
         break;
     }
     case 5:{
@@ -939,9 +953,12 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
 
             if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success" && GlobalVars::meta_unLock_bool[idx]) {
+            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }        }
+            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
+                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
+            }
+        }
         break;
     }
     case 6:{
@@ -955,9 +972,12 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
 
             if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success" && GlobalVars::meta_unLock_bool[idx]) {
+            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }        }
+            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
+                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
+            }
+        }
         break;
     }
     case 7:{
@@ -971,9 +991,11 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
 
             if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success" && GlobalVars::meta_unLock_bool[idx]) {
+            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
                 logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }        }
+            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
+                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
+            }       }
         break;
     }
     } // end of Switch
@@ -983,7 +1005,7 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
         rx_TextBoxOutput_metaMode(Tool_MTK, idx, "\n", false, false);
         emit tx_StartRepairing_metaMode(idx, true, Tool_MTK_UnLock);
     }
-        ui->lbl_Credit->setText("Credit: "+QString::number(GlobalVars::userInfo_creditDetails,'f', 1 ));
+    ui->lbl_Credit->setText("Credit: "+QString::number(GlobalVars::userInfo_creditDetails,'f', 1 ));
 }
 void MainWindow::rx_TextBoxOutput_metaMode(TOOL_TYPE tool, int idx, QString s, bool isBold, bool newline, QColor color)
 {

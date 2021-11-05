@@ -118,9 +118,11 @@ public:
     static float userInfo_creditDetails;
     static QString userInfo_HardwareKey;
     static QString userInfo_UserName;
+    static float operationID;
 
 
 
+    static QString api_MTKcharges;
     static QString api_MTKimeiGenerator;
     static QString api_MTKserverAuthenticity;
     static QString api_logURLQString;

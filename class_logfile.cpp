@@ -49,14 +49,18 @@ void Class_LogFile::writeToLog(QByteArray ba)
     }
 
 
-
-
-
     QByteArray postdata;// = data.toJson();
-    postdata.append(QString("OperationId="+ QString::number(58) +"&").toUtf8());
+    /*
+    postdata.append(QString("OperationId="+ GlobalVars::operationID+"&").toUtf8());
     postdata.append(QString("Log="+ ba).toUtf8());
-    qDebug()<<" \n\n ByteArray:"<<postdata<<"\n\n";
+    qDebug()<<" \n\n ByteArray:"<<postdata<<"\n\n"; */
+    QJsonObject obj;
+    obj["OperationId"] =  GlobalVars::operationID;
+    obj["Log"] = QString(ba);
+    QJsonDocument doc(obj);
+    postdata = doc.toJson();
 
+    qDebug()<<" \n\n Logs to server ByteArray:"<<postdata<<" Base64:"<<postdata.toBase64()<<" ";
 
     QEventLoop loop;
     QNetworkAccessManager nam;
@@ -73,7 +77,7 @@ void Class_LogFile::writeToLog(QByteArray ba)
     QJsonDocument document = QJsonDocument::fromJson(QByteArray::fromBase64(reply->readAll()));
     QJsonObject buffer = document.object();
 
-    qDebug()<<"Log reply:: "<<buffer;
+    qDebug()<<"Log Histor reply from Server:: "<<buffer;
     qDebug()<<"\n\n ";
 
 

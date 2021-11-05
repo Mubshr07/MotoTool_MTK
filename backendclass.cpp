@@ -1291,27 +1291,25 @@ bool BackEndClass::getServerIMEInumber_updateGlobal()
         postdata.append(QString("model="+GlobalVars::spd_projectName+"&").toUtf8());
         postdata.append(QString("simCode="+QString(GlobalVars::spd_dual_imei_bool? "ds":"ss")).toUtf8());
 
-        QByteArray encypted;
-        encypted.append("encrypt=2&");
-        encypted.append(QString("data="+QCryptographicHash::hash(postdata, QCryptographicHash::Sha3_256).toUpper().toHex()).toUtf8());
+        QJsonObject obj;
+        obj["data"] =  QString(QCryptographicHash::hash(postdata, QCryptographicHash::Sha3_256).toUpper().toHex());
+        obj["encrypt"] = "2";
+        QJsonDocument doc(obj);
+        QByteArray data = doc.toJson();
+        qDebug()<<" \n\n IMEI ByteArray:"<<data <<" \n Base64: "<<data.toBase64();
 
-
-
-        qDebug()<<" \n\n IMEI ByteArray:"<<postdata<<" \n Encrypted: "<<encypted;
         if(processStartStop ==  false){
             return false;
         }
         QEventLoop loop;
         QNetworkAccessManager nam;
         QNetworkRequest req;
-        //req.setUrl(QUrl("http://server51214110.ngrok.io/imeiGenerator.php"));
-        req.setUrl(QUrl("http://107.175.87.146:16777/imeiGenerator.php"));
-        //req.setUrl((QUrl("http://111.88.102.45:1500/imeiGenerator.php")));
+        req.setUrl(QUrl(GlobalVars::api_MTKimeiGenerator));
         req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-        //qDebug()<<"URL:: "<<req.url();
+        req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
 
 
-        QNetworkReply *reply = nam.post(req, encypted);
+        QNetworkReply *reply = nam.post(req, data.toBase64());
         connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
         loop.exec();
         if(processStartStop ==  false){
@@ -1326,33 +1324,65 @@ bool BackEndClass::getServerIMEInumber_updateGlobal()
         if(processStartStop ==  false){
             return false;
         }
+        buffer = QByteArray::fromBase64(buffer);
         qDebug()<<"\n\n\n IMEI response_data::"<<buffer;
-        qDebug()<<"\n\n";
+        //qDebug()<<"\n\n";
 
-        if (buffer.toLower().contains("fail"))
+        QJsonDocument document = QJsonDocument::fromJson(buffer);
+        QJsonObject jsonBuffer = document.object();
+
+        qDebug()<<" reply:: "<<jsonBuffer;
+        qDebug()<<" isError: "<<jsonBuffer.value("isError"); //.value("AccessToken");
+        qDebug()<<"\n\n ";
+
+        if (jsonBuffer.value("isError") == "true")
         {
             emit tx_miscOperations(currentToolType, 1, 100, "Error iMEI");
-            emit tx_TextBoxOutput(currentToolType, 1, "Failed to get IMEI from Server", true, false, QColor::fromRgb(255, 192, 192));
+            emit tx_TextBoxOutput(currentToolType, 1, "Failed to get IMEI-1 from Server", true, false, QColor::fromRgb(255, 192, 192));
             return false;
         }
         if (GlobalVars::spd_dual_imei_bool) //(buffer.toLower().contains("&"))
         {
-            int idx = buffer.indexOf("&");
-            if(idx < 5) {
-                emit tx_miscOperations(currentToolType, 1, 100, "Error IMEI");
-                emit tx_TextBoxOutput(currentToolType, 1, "Faided to get IMEI from Server", true, false, QColor::fromRgb(255, 192, 192));
+            QJsonValue buffer1 = jsonBuffer.value("Model");
+            GlobalVars::spd_imei_1 = buffer1.toString();
+            reply = nam.post(req, data.toBase64());
+            connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+            loop.exec();
+            if(processStartStop ==  false){
                 return false;
             }
-            GlobalVars::spd_imei_1 = buffer.left(idx);
-            buffer.remove(0, (idx+1));
-            if(buffer.length() > 5){
+            emit tx_miscOperations(currentToolType, 1, 50, "");
+            emit tx_TextBoxOutput(currentToolType, 1, QString("Geting IMEI-2 from Server: OK"), false, false, GlobalVars::txtOutPutColor);
 
-                GlobalVars::spd_imei_2 = buffer;
+
+            QByteArray buffer = reply->readAll();
+            reply->deleteLater();
+            if(processStartStop ==  false){
+                return false;
             }
+            buffer = QByteArray::fromBase64(buffer);
+            qDebug()<<"\n\n\n IMEI-2 response_data::"<<buffer;
+            //qDebug()<<"\n\n";
+
+            document = QJsonDocument::fromJson(buffer);
+            jsonBuffer = document.object();
+
+            qDebug()<<" reply 2:: "<<jsonBuffer;
+            qDebug()<<" isError: "<<jsonBuffer.value("isError"); //.value("AccessToken");
+            qDebug()<<"\n\n ";
+
+            if (jsonBuffer.value("isError") == "true") {
+                emit tx_miscOperations(currentToolType, 1, 100, "Error iMEI");
+                emit tx_TextBoxOutput(currentToolType, 1, "Failed to get IMEI-1 from Server", true, false, QColor::fromRgb(255, 192, 192));
+                return false;
+            }
+            QJsonValue imei2 = jsonBuffer.value("Model");
+            GlobalVars::spd_imei_2 = imei2.toString();
         }
         else
         {
-            GlobalVars::spd_imei_1 = buffer;
+            QJsonValue buffer1 = jsonBuffer.value("Model");
+            GlobalVars::spd_imei_1 = buffer1.toString();
         }
         //qDebug()<<" Writing this code in cmd: "<<authenReply;
     }
