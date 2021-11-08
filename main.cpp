@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<MMM_Commands>();
     qRegisterMetaType<TOOL_TYPE>();
     qRegisterMetaType<ADB_Commands>();
-
+    qRegisterMetaType<signalStructure>();
 
 
 

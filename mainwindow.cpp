@@ -43,11 +43,11 @@ MainWindow::MainWindow(QWidget *parent)
     //qDebug()<<"ID: "<<QString(QSysInfo::machineUniqueId()).toUpper();
 
     QByteArray unique(QSysInfo::machineUniqueId());
-    qDebug()<<" ASCII Hex: "<<unique.toHex();
+    //qDebug()<<" ASCII Hex: "<<unique.toHex();
 
     QByteArray encryptID = QCryptographicHash::hash(unique.toHex(), QCryptographicHash::Sha1);
-    qDebug()<<" Encrypted : "<<encryptID;
-    qDebug()<<" Encrypted Hex: "<<encryptID.toHex().toUpper();
+    //qDebug()<<" Encrypted : "<<encryptID;
+    //qDebug()<<" Encrypted Hex: "<<encryptID.toHex().toUpper();
 
     ui->lbl_SystemID->setText(encryptID.toHex().toUpper());
 
@@ -514,7 +514,7 @@ void MainWindow::on_pb_FRP_SPD_clicked()
 {
     ui->txt_outPut_SPD->clear();
 
-    //if(checkAllOk4spdTool())
+    if(checkAllOk4spdTool())
     {
         emit tx_StartRepairing(15179, true, Tool_SPD_FRP_FastBoot);
         ui->pb_Stop_SPD->setEnabled(true);
@@ -531,6 +531,63 @@ void MainWindow::rx_ProcessCompleted(int idx, bool complt)
 {
     qDebug()<<"rx_ProcessCompleted idx:"<<idx<<" complt:"<<complt;
 }
+void MainWindow::rx_newSerialPortDetected(QList<QSerialPortInfo> sInfo)
+{
+    localSerialList = sInfo;
+    //qDebug()<<" All ok no issue in clear method. please check the loop";
+    int numberOfCount = ui->cmb_PortNumber_D1->count();
+    for(int i=0; i<sInfo.length(); i++)
+    {
+        //qDebug()<<" index: "<<i<<" portName: "<<sInfo.at(i).portName() ;
+        if(i<numberOfCount){
+            ui->cmb_PortNumber_D1->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+            ui->cmb_PortNumber_D2->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+            ui->cmb_PortNumber_D3->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+            ui->cmb_PortNumber_D4->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+            ui->cmb_PortNumber_D5->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+            ui->cmb_PortNumber_D6->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+            ui->cmb_PortNumber_D7->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+            ui->cmb_PortNumber_D8->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+        }
+        else{
+            ui->cmb_PortNumber_D1->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+            ui->cmb_PortNumber_D2->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+            ui->cmb_PortNumber_D3->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+            ui->cmb_PortNumber_D4->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+            ui->cmb_PortNumber_D5->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+            ui->cmb_PortNumber_D6->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+            ui->cmb_PortNumber_D7->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+            ui->cmb_PortNumber_D8->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
+        }
+    }
+}
+
+void MainWindow::rx_ADB_ProcessData(signalStructure sig)
+{
+    if(sig.needtoInsertOutputBox) rx_TextBoxOutput(sig.currentTool, sig.toolIndex, sig.outputString, sig.outputBold, sig.outputNewLine, sig.outputColor);
+
+    ui->processProgress->setValue(sig.progressBarValue);
+    if(sig.progressBarValue > 30 && sig.progressBarValue < 60) {
+        ui->txt_IMEI_1_SPD->setText(GlobalVars::spd_imei_1);
+        ui->txt_IMEI_2_SPD->setText(GlobalVars::spd_imei_2);
+    }
+
+    if(sig.isProcessCompleted){
+        qDebug()<<" \n\n\t Operation Completed with value: 100, ";
+
+        ui->pb_Stop_SPD->setEnabled(false);
+        ui->pb_StartRepair_SPD->setEnabled(true);
+        ui->pb_CopytoClipBoard_SPD->setEnabled(true);
+        ui->pb_CheckADB_Devices->setEnabled(true);
+        ui->pb_unLock_SPD->setEnabled(true);
+        ui->pb_FRP_SPD->setEnabled(true);
+        ui->lbl_Credit->setText("Credit: "+QString::number(GlobalVars::userInfo_creditDetails,'f', 1 ));
+        if(sig.upload_LogHistory)
+            logger.writeToLog(ui->txt_outPut_SPD->toPlainText().toUtf8());
+    }
+
+}
+
 void MainWindow::rx_TextBoxOutput(TOOL_TYPE tool, int idx, QString s, bool isBold, bool newline, QColor color)
 {
     //qDebug()<<"rx_TextBoxOutput Tool:"<<tool<<" idx:"<<idx<<" QString:"<<s<<" isBold:"<<isBold<<" NewLine:"<<newline<<" Color:"<<color;
@@ -612,118 +669,16 @@ void MainWindow::rx_TextBoxOutput(TOOL_TYPE tool, int idx, QString s, bool isBol
     }
 
 }
-void MainWindow::rx_newSerialPortDetected(QList<QSerialPortInfo> sInfo)
-{
-    localSerialList = sInfo;
-    //qDebug()<<" All ok no issue in clear method. please check the loop";
-    int numberOfCount = ui->cmb_PortNumber_D1->count();
-    for(int i=0; i<sInfo.length(); i++)
-    {
-        //qDebug()<<" index: "<<i<<" portName: "<<sInfo.at(i).portName() ;
-        if(i<numberOfCount){
-            ui->cmb_PortNumber_D1->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-            ui->cmb_PortNumber_D2->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-            ui->cmb_PortNumber_D3->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-            ui->cmb_PortNumber_D4->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-            ui->cmb_PortNumber_D5->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-            ui->cmb_PortNumber_D6->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-            ui->cmb_PortNumber_D7->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-            ui->cmb_PortNumber_D8->setItemText(i, QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-        }
-        else{
-            ui->cmb_PortNumber_D1->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-            ui->cmb_PortNumber_D2->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-            ui->cmb_PortNumber_D3->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-            ui->cmb_PortNumber_D4->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-            ui->cmb_PortNumber_D5->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-            ui->cmb_PortNumber_D6->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-            ui->cmb_PortNumber_D7->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-            ui->cmb_PortNumber_D8->addItem(QString(sInfo.at(i).portName() + " " + sInfo.at(i).manufacturer()));
-        }
-    }
-}
 void MainWindow::rx_miscOperations(TOOL_TYPE tool, int idx, int value, QString str)
 {
     if(idx == 1){
         ui->processProgress->setValue(value);
+        if(value > 30 && value < 60) {
+            ui->txt_IMEI_1_SPD->setText(GlobalVars::spd_imei_1);
+            ui->txt_IMEI_2_SPD->setText(GlobalVars::spd_imei_2);
+        }
         if(value >= 100) {
-            qDebug()<<" \n\n\t Operation Completed with value: 100, and Str: "<<str;
 
-            ui->pb_Stop_SPD->setEnabled(false);
-            ui->pb_StartRepair_SPD->setEnabled(true);
-            ui->pb_CopytoClipBoard_SPD->setEnabled(true);
-            ui->pb_CheckADB_Devices->setEnabled(true);
-            ui->pb_unLock_SPD->setEnabled(true);
-            ui->pb_FRP_SPD->setEnabled(true);
-            ui->lbl_Credit->setText("Credit: "+QString::number(GlobalVars::userInfo_creditDetails,'f', 1 ));
-
-            if(str.contains("uccess")) {
-
-                /*
-                 * :
-                { "OperationName":"Repair",
-                 "DeviceName":"moto e6",
-                 "SKU":"",
-                 "TrackId":"N1SZ1A0136",
-                 "LogSerial":"351628112529832",
-                 "FlexId":"M632_MCFG_FLEX_00.01R",
-                 "RoCarrier":"",
-                 "ProductModel":"moto e6",
-                 "FlashId":"PCBS29.73-109-6-3-6-2",
-                 "FsgVersion":"SURF_NA_TMO_CUST",
-                 "IMEI1":"351628112529832",
-                 "IMEI2":"0CC6D352",
-                 "Description":null}
-                 *
-                 * */
-
-                QByteArray postdata;
-                if(tool == Tool_SPD)
-                    postdata.append("OperationName=SPD_Repair&");
-                else if(tool == Tool_UnLock)
-                    postdata.append("OperationName=SPD_Unlock&");
-                else if(tool == Tool_SPD_FRP_FastBoot)
-                    postdata.append("OperationName=SPD_FastBoot&");
-
-                postdata.append(QString("DeviceName="+ GlobalVars::spd_modelStr+"&").toUtf8());
-                postdata.append(QString("SKU=_&").toUtf8());
-                postdata.append(QString("TrackId=N1SZ1A0136&").toUtf8());
-                postdata.append(QString("LogSerial=351628112529832&").toUtf8());
-                postdata.append(QString("FlexId=M632_MCFG_FLEX_00.01R&").toUtf8());
-                postdata.append(QString("RoCarrier=_&").toUtf8());
-                postdata.append(QString("ProductModel="+ GlobalVars::spd_modelStr+"&").toUtf8());
-                postdata.append(QString("FlashId=PCBS29.73-109-6-3-6-2&").toUtf8());
-                postdata.append(QString("FsgVersion=SURF_NA_TMO_CUST&").toUtf8());
-                postdata.append(QString("IMEI1="+ GlobalVars::spd_imei_1+"&").toUtf8());
-                postdata.append(QString("IMEI2="+ GlobalVars::spd_imei_2+"&").toUtf8());
-                postdata.append(QString("Description=null&").toUtf8());
-
-
-
-                qDebug()<<" \n\n ByteArray:"<<postdata<<"\n\n";
-
-
-                QEventLoop loop;
-                QNetworkAccessManager nam;
-                QNetworkRequest req;
-                req.setUrl(QUrl(GlobalVars::api_PerformQString));
-                req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-                req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
-
-                QNetworkReply *reply = nam.post(req, postdata.toBase64());
-                connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-                loop.exec();
-                //qDebug()<<" Reply:: "<<reply->readAll();
-
-                QJsonDocument document = QJsonDocument::fromJson(QByteArray::fromBase64(reply->readAll()));
-                QJsonObject buffer = document.object();
-
-                qDebug()<<"Operation Completed reply:: "<<buffer;
-                qDebug()<<"\n\n ";
-            }
-
-
-            logger.writeToLog(ui->txt_outPut_SPD->toPlainText().toUtf8());
         }
     }
 
@@ -849,6 +804,12 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
     switch (idx) {
     case 0:{
         ui->progress_D1->setValue(value);
+        if(value > 30 && value < 60) {
+            ui->txt_IMEI_D1_1->setText(GlobalVars::meta_imei_1[idx]);
+            ui->txt_IMEI_D1_2->setText(GlobalVars::meta_imei_2[idx]);
+        }
+
+
         if(value >= 100) {
             ui->pb_Stop_D1->setEnabled(false);
             ui->pb_StartRepairing_D1->setEnabled(true);
@@ -856,18 +817,16 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
             ui->pb_CheckSerialPorts_D1->setEnabled(true);
             ui->pb_unLock_D1->setEnabled(true);
             ui->pb_carrierFix_D1->setEnabled(true);
-            if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }
+            logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
         }
         break;
     }
     case 1:{
         ui->progress_D2->setValue(value);
+        if(value > 30 && value < 60) {
+            ui->txt_IMEI_D2_1->setText(GlobalVars::meta_imei_1[idx]);
+            ui->txt_IMEI_D2_2->setText(GlobalVars::meta_imei_2[idx]);
+        }
         if(value >= 100) {
             ui->pb_Stop_D2->setEnabled(false);
             ui->pb_StartRepairing_D2->setEnabled(true);
@@ -875,37 +834,32 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
             ui->pb_CheckSerialPorts_D2->setEnabled(true);
             ui->pb_unLock_D2->setEnabled(true);
 
-            if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }
+            logger.writeToLog(ui->txt_outPut_D2->toPlainText().toUtf8());
         }
         break;
     }
     case 2:{
         ui->progress_D3->setValue(value);
+        if(value > 30 && value < 60) {
+            ui->txt_IMEI_D3_1->setText(GlobalVars::meta_imei_1[idx]);
+            ui->txt_IMEI_D3_2->setText(GlobalVars::meta_imei_2[idx]);
+        }
         if(value >= 100) {
             ui->pb_Stop_D3->setEnabled(false);
             ui->pb_StartRepairing_D3->setEnabled(true);
             ui->pb_CopytoClipBoard_D3->setEnabled(true);
             ui->pb_CheckSerialPorts_D3->setEnabled(true);
             ui->pb_unLock_D3->setEnabled(true);
-
-            if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }
+            logger.writeToLog(ui->txt_outPut_D3->toPlainText().toUtf8());
         }
         break;
     }
     case 3:{
         ui->progress_D4->setValue(value);
+        if(value > 30 && value < 60) {
+            ui->txt_IMEI_D4_1->setText(GlobalVars::meta_imei_1[idx]);
+            ui->txt_IMEI_D4_2->setText(GlobalVars::meta_imei_2[idx]);
+        }
         if(value >= 100) {
             ui->pb_Stop_D4->setEnabled(false);
             ui->pb_StartRepairing_D4->setEnabled(true);
@@ -913,18 +867,16 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
             ui->pb_CheckSerialPorts_D4->setEnabled(true);
             ui->pb_unLock_D4->setEnabled(true);
 
-            if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }
+            logger.writeToLog(ui->txt_outPut_D4->toPlainText().toUtf8());
         }
         break;
     }
     case 4:{
         ui->progress_D5->setValue(value);
+        if(value > 30 && value < 60) {
+            ui->txt_IMEI_D5_1->setText(GlobalVars::meta_imei_1[idx]);
+            ui->txt_IMEI_D5_2->setText(GlobalVars::meta_imei_2[idx]);
+        }
         if(value >= 100) {
             ui->pb_Stop_D5->setEnabled(false);
             ui->pb_StartRepairing_D5->setEnabled(true);
@@ -932,18 +884,16 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
             ui->pb_CheckSerialPorts_D5->setEnabled(true);
             ui->pb_unLock_D5->setEnabled(true);
 
-            if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }
+            logger.writeToLog(ui->txt_outPut_D5->toPlainText().toUtf8());
         }
         break;
     }
     case 5:{
         ui->progress_D6->setValue(value);
+        if(value > 30 && value < 60) {
+            ui->txt_IMEI_D6_1->setText(GlobalVars::meta_imei_1[idx]);
+            ui->txt_IMEI_D6_2->setText(GlobalVars::meta_imei_2[idx]);
+        }
         if(value >= 100) {
             ui->pb_Stop_D6->setEnabled(false);
             ui->pb_StartRepairing_D6->setEnabled(true);
@@ -951,18 +901,16 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
             ui->pb_CheckSerialPorts_D6->setEnabled(true);
             ui->pb_unLock_D6->setEnabled(true);
 
-            if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }
+            logger.writeToLog(ui->txt_outPut_D6->toPlainText().toUtf8());
         }
         break;
     }
     case 6:{
         ui->progress_D7->setValue(value);
+        if(value > 30 && value < 60) {
+            ui->txt_IMEI_D7_1->setText(GlobalVars::meta_imei_1[idx]);
+            ui->txt_IMEI_D7_2->setText(GlobalVars::meta_imei_2[idx]);
+        }
         if(value >= 100) {
             ui->pb_Stop_D7->setEnabled(false);
             ui->pb_StartRepairing_D7->setEnabled(true);
@@ -970,32 +918,24 @@ void MainWindow::rx_miscOperations_metaMode(TOOL_TYPE tool, int idx, int value, 
             ui->pb_CheckSerialPorts_D7->setEnabled(true);
             ui->pb_unLock_D7->setEnabled(true);
 
-            if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }
+            logger.writeToLog(ui->txt_outPut_D7->toPlainText().toUtf8());
         }
         break;
     }
     case 7:{
         ui->progress_D8->setValue(value);
+        if(value > 30 && value < 60) {
+            ui->txt_IMEI_D8_1->setText(GlobalVars::meta_imei_1[idx]);
+            ui->txt_IMEI_D8_2->setText(GlobalVars::meta_imei_2[idx]);
+        }
         if(value >= 100) {
             ui->pb_Stop_D8->setEnabled(false);
             ui->pb_StartRepairing_D8->setEnabled(true);
             ui->pb_CopytoClipBoard_D8->setEnabled(true);
             ui->pb_CheckSerialPorts_D8->setEnabled(true);
             ui->pb_unLock_D8->setEnabled(true);
-
-            if(tool==Tool_MTK && value>=100 && str=="Success" && !GlobalVars::meta_unLock_bool[idx]) {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            } else if(tool==Tool_MTK_UnLock && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }else if(tool==Tool_META_CarrierFix && value>=100 && str=="Success") {
-                logger.writeToLog(ui->txt_outPut_D1->toPlainText().toUtf8());
-            }       }
+            logger.writeToLog(ui->txt_outPut_D8->toPlainText().toUtf8());
+        }
         break;
     }
     } // end of Switch
@@ -1085,12 +1025,16 @@ void MainWindow::initializeObjectsAndStartThread()
     backEndObj = new BackEndClass();
     thrd  = new QThread(backEndObj);
     backEndObj->moveToThread(thrd);
-    connect(backEndObj, SIGNAL(tx_TextBoxOutput(TOOL_TYPE, int,QString,bool,bool,QColor)), this, SLOT(rx_TextBoxOutput(TOOL_TYPE, int, QString,bool,bool,QColor)));
+    //connect(backEndObj, SIGNAL(tx_TextBoxOutput(TOOL_TYPE, int,QString,bool,bool,QColor)), this, SLOT(rx_TextBoxOutput(TOOL_TYPE, int, QString,bool,bool,QColor)));
+    //connect(backEndObj, SIGNAL(tx_miscOperations(TOOL_TYPE,int,int,QString)), this, SLOT(rx_miscOperations(TOOL_TYPE,int,int,QString)));
+
+    connect(backEndObj, SIGNAL(tx_ADB_ProcessData(signalStructure)), this, SLOT(rx_ADB_ProcessData(signalStructure)));
+
     connect(backEndObj, SIGNAL(tx_newSerialPortDetected(QList<QSerialPortInfo>)), this, SLOT(rx_newSerialPortDetected(QList<QSerialPortInfo>)));
-    connect(backEndObj, SIGNAL(tx_miscOperations(TOOL_TYPE,int,int,QString)), this, SLOT(rx_miscOperations(TOOL_TYPE,int,int,QString)));
     connect(this, SIGNAL(tx_StartRepairing(int, bool,TOOL_TYPE)), backEndObj, SLOT(rx_StartRepairing(int, bool,TOOL_TYPE)));
     connect(this, SIGNAL(tx_updateSerialPorts()), backEndObj, SLOT(rx_updateSerialPorts()));
     connect(this, SIGNAL(tx_updateADBdevices()), backEndObj, SLOT(rx_updateADBdevices()));
+
     thrd->start(QThread::NormalPriority);
 
     int localIndx = 0;

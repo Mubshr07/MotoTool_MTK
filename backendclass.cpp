@@ -2,6 +2,17 @@
 
 BackEndClass::BackEndClass(QObject *parent) : QObject(parent)
 {
+    signal.currentTool = Tool_Idle;
+    signal.toolIndex = 1;
+    signal.outputString= "";
+    signal.outputBold=false;
+    signal.outputNewLine=false;
+    signal.needtoInsertOutputBox=false;
+    signal.outputColor=GlobalVars::txtOutPutColor;
+    signal.progressBarValue=0;
+    signal.isProcessCompleted=false;
+    signal.upload_LogHistory = false;
+
     timer_SPDTool = new QTimer(this);
     timer_SPDTool->setSingleShot(true);
     connect(timer_SPDTool, SIGNAL(timeout()), this, SLOT(rx_timer_SPDTool_elapsed()));
@@ -55,7 +66,7 @@ void BackEndClass::rx_StartRepairing(int idx, bool startStop, TOOL_TYPE tool)
     showThisinDebug = false;
     currentCommand[idx] = MMM_Idle;
     if(startStop){
-        currentToolType = tool;  // Seting Current Tool , => MTK or SPD
+        signal.currentTool = tool;  // Seting Current Tool , => MTK or SPD
 
         qDebug()<<" SPD Tool -> Sending ADB Commands";
         nowForSecondIMEI = false;
@@ -63,7 +74,7 @@ void BackEndClass::rx_StartRepairing(int idx, bool startStop, TOOL_TYPE tool)
         actualADBcommands = false;
         singleShotIndex = 1;
 
-        if(currentToolType != Tool_SPD_FRP_FastBoot) if(!getServerIMEInumber_updateGlobal()) return;
+        if(signal.currentTool != Tool_SPD_FRP_FastBoot) if(!getServerIMEInumber_updateGlobal()) return;
 
 
 
@@ -88,16 +99,20 @@ void BackEndClass::rx_StartRepairing(int idx, bool startStop, TOOL_TYPE tool)
 
         qDebug()<<" Selected Model: "<<GlobalVars::spd_modelStr<<" Program: "<<adbProcess->program();
 
-        emit tx_miscOperations(Tool_SPD, 1, 5, "");
-        if(currentToolType == Tool_SPD)
-            emit tx_TextBoxOutput(Tool_SPD, 1, "Start process Write ADB ImeI: OK", false, false, GlobalVars::txtOutPutColor);
-        else if(currentToolType == Tool_UnLock)
-            emit tx_TextBoxOutput(Tool_UnLock, 1, "Start process UnLOCK: OK", false, false, GlobalVars::txtOutPutColor);
-        else if(currentToolType == Tool_SPD_FRP_FastBoot)
-            emit tx_TextBoxOutput(Tool_SPD_FRP_FastBoot, 1, "Start process FastBoot: OK", false, false, GlobalVars::txtOutPutColor);
+        signal.isProcessCompleted = false;
+        signal.progressBarValue = 5;
+        signal.toolIndex = 1;
+        if(signal.currentTool == Tool_SPD)
+            signal.outputString =  "Start process Write ADB ImeI: OK";
+        else if(signal.currentTool == Tool_UnLock)
+            signal.outputString =  "Start process UnLOCK: OK";
+        else if(signal.currentTool == Tool_SPD_FRP_FastBoot)
+            signal.outputString = "Start process FastBoot: OK";
+        signal.needtoInsertOutputBox = true;
+        emit tx_ADB_ProcessData(signal);
 
         adbProcess->setWorkingDirectory(adbFolderPath);
-        if(currentToolType ==  Tool_SPD_FRP_FastBoot)
+        if(signal.currentTool ==  Tool_SPD_FRP_FastBoot)
         {
             spd_commandStr = "fastboot devices";
             timer_SingleShot->start(3000);
@@ -124,7 +139,7 @@ void BackEndClass::rx_StartRepairing(int idx, bool startStop, TOOL_TYPE tool)
         //adbProcess->setTextModeEnabled(true);
         //adbProcess->waitForReadyRead(1000);
         adbProcess->waitForFinished(1000);
-        emit tx_miscOperations(Tool_SPD, 1, 10, "");
+
         /*}*/
     }
     if(processStartStop ==  false){
@@ -194,7 +209,7 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
     case ADB_Idle: break;
     case ADB_ConnectedDevice: break;
     case  ADB_Model: {
-        if(currentToolType == Tool_SPD_FRP_FastBoot){
+        if(signal.currentTool == Tool_SPD_FRP_FastBoot){
             switch (frpInfoIndex) {
             case 0: spd_commandStr = "fastboot getvar has-slot:frp"; break;
             case 1: spd_commandStr = "fastboot getvar ro.boot.hardware.sku"; break;
@@ -322,10 +337,10 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
         adbProcess->waitForFinished(1000);
 
         if(adb_InfoOnly == false) {
-            if(currentToolType == Tool_UnLock) {
+            if(signal.currentTool == Tool_UnLock) {
                 currentADB = ADB_UnLockSIM;
                 timer_SPDTool->start(5000);
-            } else if(currentToolType == Tool_SPD){
+            } else if(signal.currentTool == Tool_SPD){
                 currentADB = ADB_ChinoeIMEICMTool;
                 actualADBcommands = true;
                 timer_SPDTool->start(5000);
@@ -455,8 +470,8 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
         //adbProcess->start();
         qDebug()<<" PushFile: command: "<<spd_commandStr;
 
-        //emit tx_miscOperations(currentToolType, 1, 50, "");
-        //emit tx_TextBoxOutput(currentToolType, 1, QString("Pushing FRP File to Mobile: "+spd_commandStr), false, false, GlobalVars::txtOutPutColor);
+        //emit tx_miscOperations(signal.currentTool, 1, 50, "");
+        //emit tx_TextBoxOutput(signal.currentTool, 1, QString("Pushing FRP File to Mobile: "+spd_commandStr), false, false, GlobalVars::txtOutPutColor);
 
         adbProcess->open(QIODevice::ReadWrite);
         if (adbProcess->waitForStarted(6000) == false)
@@ -507,8 +522,14 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
 
 void BackEndClass::rx_timer_singleShot_elapsed()
 {
-    emit tx_miscOperations(currentToolType, 1, 100, "No Device Found");
-    emit tx_TextBoxOutput(currentToolType, 1, QString(" No Device Found. "), true, false, Qt::red);
+    signal.progressBarValue = 100;
+    signal.outputBold = true;
+    signal.outputString = "No Device Found. ";
+    signal.outputColor = Qt::red; //GlobalVars::txtOutPutColor;
+    signal.needtoInsertOutputBox = true;
+    signal.isProcessCompleted = true;
+    signal.upload_LogHistory = false;
+    emit tx_ADB_ProcessData(signal);
 }
 
 
@@ -563,7 +584,7 @@ void BackEndClass::getConnectedDevices_andSendThemGUI(QByteArray ba)
     QString authorized ="";
     adbDeviceDetectedandAuthorized = false;
 
-    if(currentToolType == Tool_SPD_FRP_FastBoot){
+    if(signal.currentTool == Tool_SPD_FRP_FastBoot){
         frp_infoCompleted = false;
         frpInfoIndex = 0;
         timer_SingleShot->stop();
@@ -575,25 +596,42 @@ void BackEndClass::getConnectedDevices_andSendThemGUI(QByteArray ba)
             endlineIndx = ba.indexOf("\r\n");
             authorized = ba.left(endlineIndx);
             if(authorized == "fastboot"){
-                emit tx_TextBoxOutput(currentToolType, 1, "Start process Read Info : OK", false, false, GlobalVars::txtOutPutColor);
-                emit tx_TextBoxOutput(currentToolType, 1, "Processing ", false, false, GlobalVars::txtOutPutColor);
-                //emit tx_TextBoxOutput(currentToolType, 1,"Getting Authorization From Server: OK ", false, false, GlobalVars::txtOutPutColor);
+                signal.outputString = "Start process Read Info : OK";
+                signal.needtoInsertOutputBox= true;
+                signal.outputColor = GlobalVars::txtOutPutColor;
+                emit tx_ADB_ProcessData(signal);
+
+                signal.outputString = "Processing";
+                emit tx_ADB_ProcessData(signal);
+
                 adbDeviceDetectedandAuthorized = true;
             }
             else if(authorized =="unauthorized")
             {
                 adbDevicesRaw.clear();
-                emit tx_TextBoxOutput(Tool_SPD, 1, "Device is not authorized. Please enable the usb debuging mode.", false, false, Qt::red);
-                emit tx_miscOperations(Tool_SPD,1, 100, "Device is not authorized");
+                signal.outputString = "Device is not authorized. Please enable the usb debuging mode.";
+                signal.needtoInsertOutputBox = true;
+                signal.isProcessCompleted = true;
+                signal.upload_LogHistory = false;
+                signal.progressBarValue = 100;
+                emit tx_ADB_ProcessData(signal);
+
                 adbProcess->reset();
             }
             currentADB = ADB_Model;
             singleShotIndex=1;
             timer_SPDTool->start(500);
-            emit tx_miscOperations(currentToolType, 1, 15, "");
+
+            signal.needtoInsertOutputBox = false;
+            signal.progressBarValue = 15;
+            emit tx_ADB_ProcessData(signal);
+
         } else {
-            emit tx_TextBoxOutput(currentToolType, 1, "Error in Finding Devices, Please re-Plug the device \n ---------------------------------", false, false, Qt::red);
-            emit tx_miscOperations(currentToolType, 1, 100, "Error in Finding Devices");
+            signal.outputString = "Error in Finding Devices, Please re-Plug the device \n ---------------------------------";
+            signal.outputColor = Qt::red;
+            signal.needtoInsertOutputBox = true;
+            signal.progressBarValue = 100;
+            emit tx_ADB_ProcessData(signal);
         }
     } else {
         if(ba.contains("List of devices attached")){
@@ -609,17 +647,30 @@ void BackEndClass::getConnectedDevices_andSendThemGUI(QByteArray ba)
             authorized = ba.left(endlineIndx);
             if(authorized == "device"){
                 adbDevicesRaw.append(deviceID);
-                emit tx_miscOperations(Tool_SPD, 11, deviceNumber, deviceID);
-                emit tx_TextBoxOutput(Tool_SPD, 1, "Start process Read Info : OK", false, false, GlobalVars::txtOutPutColor);
-                emit tx_TextBoxOutput(Tool_SPD, 1, "Processing ", false, false, GlobalVars::txtOutPutColor);
-                emit tx_TextBoxOutput(Tool_SPD, 1,"Getting Authorization From Server: OK ", false, false, GlobalVars::txtOutPutColor);
+                signal.outputString = "Start process Read Info : OK";
+                signal.outputColor = GlobalVars::txtOutPutColor;
+                signal.outputBold = false;
+                signal.needtoInsertOutputBox = true;
+                signal.progressBarValue = 11;
+                emit tx_ADB_ProcessData(signal);
+                signal.outputString = "Processing";
+                emit tx_ADB_ProcessData(signal);
+                signal.outputString = "Getting Authorization From Server: OK";
+                emit tx_ADB_ProcessData(signal);
+
                 adbDeviceDetectedandAuthorized = true;
             }
             else if(authorized =="unauthorized")
             {
                 adbDevicesRaw.clear();
-                emit tx_TextBoxOutput(Tool_SPD, 1, "Device is not authorized. Please enable the usb debuging mode.", false, false, Qt::red);
-                emit tx_miscOperations(Tool_SPD,1, 100, "Device is not authorized");
+                signal.outputString = "Device is not authorized. Please enable the usb debuging mode.";
+                signal.outputColor = GlobalVars::txtOutPutColor;
+                signal.outputBold = false;
+                signal.needtoInsertOutputBox = true;
+                signal.progressBarValue = 100;
+                signal.isProcessCompleted = true;
+                emit tx_ADB_ProcessData(signal);
+
                 adbProcess->reset();
             }
 
@@ -627,70 +678,112 @@ void BackEndClass::getConnectedDevices_andSendThemGUI(QByteArray ba)
             currentADB = ADB_Model;
             singleShotIndex=1;
             timer_SPDTool->start(500);
-            emit tx_miscOperations(currentToolType, 1, 15, "");
+
+            signal.needtoInsertOutputBox = false;
+            signal.progressBarValue = 50;
+            emit tx_ADB_ProcessData(signal);
         }
         else
         {
-            emit tx_TextBoxOutput(currentToolType, 1, "Error in Finding Devices, Please re-Plug the device \n ---------------------------------", false, false, Qt::red);
-            emit tx_miscOperations(currentToolType, 1, 100, "Error in Finding Devices");
+            signal.outputString = "Error in Finding Devices, Please re-Plug the device \n ---------------------------------";
+            signal.outputColor = Qt::red; // GlobalVars::txtOutPutColor;
+            signal.outputBold = true;
+            signal.needtoInsertOutputBox = true;
+            signal.progressBarValue = 100;
+            signal.isProcessCompleted = true;
+            emit tx_ADB_ProcessData(signal);
         }
     }
 }
 void BackEndClass::getADB_Model(QByteArray ba)
 {
     //qDebug()<<"getADB_Model::  "<<ba;
-    if(currentToolType == Tool_SPD_FRP_FastBoot){
+    if(signal.currentTool == Tool_SPD_FRP_FastBoot){
         getFastBoot_info(ba);
         if(frp_infoCompleted){
             currentADB =  ADB_FRP_GetServerFile;
             timer_SPDTool->start(500);
-            emit tx_miscOperations(Tool_SPD, 1, 25, "");
+            signal.outputColor = GlobalVars::txtOutPutColor;
+            signal.needtoInsertOutputBox = false;
+            signal.progressBarValue = 25;
+            signal.isProcessCompleted = false;
+            emit tx_ADB_ProcessData(signal);
         }
 
     } else {
-        emit tx_TextBoxOutput(Tool_SPD, 1, QString("Model: "+ba), false, false, GlobalVars::txtOutPutColor);
+        signal.outputString = QString("Model: "+ba);
+        signal.outputColor = GlobalVars::txtOutPutColor;
+        signal.outputBold = false;
+        signal.needtoInsertOutputBox = true;
+        signal.progressBarValue = 20;
+        signal.isProcessCompleted = false;
+        emit tx_ADB_ProcessData(signal);
+
         currentADB = ADB_AndroidVersion;
         timer_SPDTool->start(500);
-        emit tx_miscOperations(Tool_SPD, 1, 20, "");
     }
 }
 void BackEndClass::getADB_AndroidVersion(QByteArray ba)
 {
     //qDebug()<<"getADB_AndroidVersion::  "<<ba;
-    emit tx_TextBoxOutput(Tool_SPD, 1, QString("Android Version: "+ba), false, false, GlobalVars::txtOutPutColor);
+
+    signal.outputString = QString("Android Version: "+ba);
+    signal.outputColor = GlobalVars::txtOutPutColor;
+    signal.outputBold = false;
+    signal.needtoInsertOutputBox = true;
+    signal.progressBarValue = 30;
+    signal.isProcessCompleted = false;
+    emit tx_ADB_ProcessData(signal);
+
     currentADB = ADB_SerialNumber;
     timer_SPDTool->start(500);
-    emit tx_miscOperations(Tool_SPD, 1, 30, "");
 
 }
 void BackEndClass::getADB_BuildDate(QByteArray ba)
 {
     //qDebug()<<"getADB_BuildDate::  "<<ba;
-    emit tx_TextBoxOutput(Tool_SPD, 1, QString("BuildDate: "+ba), false, false, GlobalVars::txtOutPutColor);
+    signal.outputString = QString("BuildDate: "+ba);
+    signal.outputColor = GlobalVars::txtOutPutColor;
+    signal.outputBold = false;
+    signal.needtoInsertOutputBox = true;
+    signal.progressBarValue = 10;
+    emit tx_ADB_ProcessData(signal);
+
     currentADB = ADB_SerialNumber;
     timer_SPDTool->start(500);
-    emit tx_miscOperations(Tool_SPD, 1, 10, "");
 
 }
 void BackEndClass::getADB_SerialNumber(QByteArray ba)
 {
     //qDebug()<<"getADB_SerialNumber::  "<<ba;
-    emit tx_TextBoxOutput(Tool_SPD, 1, QString("Serial: "+ba), false, false, GlobalVars::txtOutPutColor);
+
+    signal.outputString = QString("Serial: "+ba);
+    signal.outputColor = GlobalVars::txtOutPutColor;
+    signal.outputBold = false;
+    signal.needtoInsertOutputBox = true;
+    signal.isProcessCompleted = false;
+    emit tx_ADB_ProcessData(signal);
+
     if(adb_InfoOnly == false){
-        if(currentToolType == Tool_SPD)
+        if(signal.currentTool == Tool_SPD)
         {
             if(GlobalVars::spd_dual_imei_bool)
             {
-                emit tx_TextBoxOutput(Tool_SPD, 1, QString("IMEI-1: "+GlobalVars::spd_imei_1), false, false, GlobalVars::txtOutPutColor);
-                emit tx_TextBoxOutput(Tool_SPD, 1, QString("IMEI-2: "+GlobalVars::spd_imei_2), false, false, GlobalVars::txtOutPutColor);
+                signal.outputString = QString("IMEI-1: " + GlobalVars::spd_imei_1);
+                emit tx_ADB_ProcessData(signal);
+                signal.outputString = QString("IMEI-2: "+GlobalVars::spd_imei_2);
+                emit tx_ADB_ProcessData(signal);
             } else {
-                emit tx_TextBoxOutput(Tool_SPD, 1, QString("IMEI: "+GlobalVars::spd_imei_1), false, false, GlobalVars::txtOutPutColor);
+                signal.outputString = QString("IMEI-1: "+ GlobalVars::spd_imei_1);
+                emit tx_ADB_ProcessData(signal);
             }
         }
 
         currentADB = ADB_Reboot;
         timer_SPDTool->start(500);
-        emit tx_miscOperations(Tool_SPD, 1,  40, "");
+        signal.needtoInsertOutputBox = false;
+        signal.progressBarValue = 40;
+        emit tx_ADB_ProcessData(signal);
     }
     else{
         //qDebug()<<"\n\n\t assignPort_bool:"<<GlobalVars::spd_AssignPort_bool;
@@ -700,23 +793,38 @@ void BackEndClass::getADB_SerialNumber(QByteArray ba)
                 currentADB = ADB_Reboot;
                 //currentADB = ADB_AssignPortCmd;
                 timer_SPDTool->start(500);
-                emit tx_miscOperations(Tool_SPD, 1,  70, "");
+                signal.progressBarValue = 70;
+                emit tx_ADB_ProcessData(signal);
             }
             else
             {
-                emit tx_miscOperations(Tool_SPD, 1,  100, "success");
-                emit tx_TextBoxOutput(Tool_SPD, 1, "---------------------------------", false, false, Qt::white);
+                signal.outputString = "--------------------------------------";
+                signal.outputColor = Qt::white;
+                signal.outputBold = false;
+                signal.needtoInsertOutputBox = true;
+                signal.progressBarValue = 100;
+                signal.isProcessCompleted = true;
+                emit tx_ADB_ProcessData(signal);
             }
         }
         else if(GlobalVars::spd_modelStr.contains("E6s XT2053")||GlobalVars::spd_modelStr.contains("G8 Power Lite XT2055")||GlobalVars::spd_modelStr.contains("E7 Play XT2095")) {
-
-            emit tx_miscOperations(Tool_SPD, 1,  100, "success");
-            emit tx_TextBoxOutput(Tool_SPD, 1, "---------------------------------", false, false, Qt::white);
+            signal.outputString = "------------------------------------------";
+            signal.outputColor = Qt::white; // GlobalVars::txtOutPutColor;
+            signal.outputBold = false;
+            signal.needtoInsertOutputBox = true;
+            signal.progressBarValue = 100;
+            signal.isProcessCompleted = true;
+            emit tx_ADB_ProcessData(signal);
         }
         else if(GlobalVars::spd_modelStr.contains("G20")) {
 
-            emit tx_miscOperations(Tool_SPD, 1,  100, "success");
-            emit tx_TextBoxOutput(Tool_SPD, 1, "---------------------------------", false, false, Qt::white);
+            signal.outputString = "------------------------------";
+            signal.outputColor = Qt::white; // GlobalVars::txtOutPutColor;
+            signal.outputBold = false;
+            signal.needtoInsertOutputBox = true;
+            signal.progressBarValue = 100;
+            signal.isProcessCompleted = true;
+            emit tx_ADB_ProcessData(signal);
         }
     }
 }
@@ -724,21 +832,33 @@ void BackEndClass::getADB_AssignPortCmd(QByteArray ba)
 {
     qDebug()<<"getADB_AssignPortCmd::  "<<ba;
 
+    signal.outputString = ba;
+    signal.outputColor = GlobalVars::txtOutPutColor;
+    signal.outputBold = false;
+    signal.needtoInsertOutputBox = true;
+    emit tx_ADB_ProcessData(signal);
 
-    emit tx_TextBoxOutput(Tool_SPD, 1, ba, false, false, GlobalVars::txtOutPutColor);
     if(adb_InfoOnly == false){
         currentADB = ADB_ChinoeIMEICMTool;
         timer_SPDTool->start(1500);
-        emit tx_miscOperations(Tool_SPD, 1,  80, "");
+        signal.needtoInsertOutputBox = false;
+        signal.progressBarValue = 80;
+        emit tx_ADB_ProcessData(signal);
     }
     else {
-        emit tx_miscOperations(Tool_SPD, 1, 100, "success");
+        signal.needtoInsertOutputBox = false;
+        signal.progressBarValue = 100;
+        signal.isProcessCompleted = true;
+        emit tx_ADB_ProcessData(signal);
     }
 }
 void BackEndClass::getADB_Original_imei(QByteArray ba)
 {
     //qDebug()<<"getADB_Original_imei::  "<<ba;
-    emit tx_TextBoxOutput(Tool_SPD, 1, QString("Original IMEI: "+ba), false, false, GlobalVars::txtOutPutColor);
+
+    signal.outputString = QString("Original IMEI: "+ba);
+    emit tx_ADB_ProcessData(signal);
+
     currentADB = ADB_Reboot;
     timer_SPDTool->start(500);
 
@@ -748,21 +868,29 @@ void BackEndClass::getADB_rebootCommand(QByteArray ba)
     qDebug()<<"getADB_rebootCommand::  "<<ba;
     ba.replace("\n", "");
     ba.replace("\r", "");
-    emit tx_TextBoxOutput(Tool_SPD, 1, QString("Reboot: "+ba), false, false, GlobalVars::txtOutPutColor);
-    //qDebug()<<" TootType indx : "<<currentToolType;
+
+
+    signal.outputString = QString("Reboot: "+ba);
+    emit tx_ADB_ProcessData(signal);
+
+    //qDebug()<<" TootType indx : "<<signal.currentTool;
     if(timer_SPDTool->isActive()) timer_SPDTool->stop();
     if(adb_InfoOnly == false) {
-        if(currentToolType == Tool_UnLock)
+        if(signal.currentTool == Tool_UnLock)
         {
             currentADB = ADB_UnLockSIM;
             timer_SPDTool->start(2000);
-            emit tx_miscOperations(Tool_SPD, 1, 50, "");
+
+            signal.progressBarValue = 50;
+            emit tx_ADB_ProcessData(signal);
         }
-        else if(currentToolType == Tool_SPD){
+        else if(signal.currentTool == Tool_SPD){
             currentADB = ADB_ChinoeIMEICMTool;
             actualADBcommands = true;
             timer_SPDTool->start(2000);
-            emit tx_miscOperations(Tool_SPD, 1, 50, "");
+
+            signal.progressBarValue = 50;
+            emit tx_ADB_ProcessData(signal);
         }
     } else {
         if(GlobalVars::spd_modelStr.contains("E6I")||GlobalVars::spd_modelStr.contains("E7I")) {
@@ -770,12 +898,19 @@ void BackEndClass::getADB_rebootCommand(QByteArray ba)
             {
                 currentADB = ADB_AssignPortCmd;
                 timer_SPDTool->start(1500);
-                emit tx_miscOperations(Tool_SPD, 1,  70, "");
+
+                signal.progressBarValue = 70;
+                emit tx_ADB_ProcessData(signal);
             }
             else
             {
-                emit tx_miscOperations(Tool_SPD, 1,  100, "success");
-                emit tx_TextBoxOutput(Tool_SPD, 1, "---------------------------------", false, false, Qt::white);
+                signal.outputString = "-------------------------------------";
+                signal.outputColor = Qt::white; // GlobalVars::txtOutPutColor;
+                signal.outputBold = false;
+                signal.needtoInsertOutputBox = true;
+                signal.isProcessCompleted = true;
+                signal.progressBarValue = 100;
+                emit tx_ADB_ProcessData(signal);
             }
         }
     }
@@ -787,8 +922,13 @@ void BackEndClass::getADB_ChinoeIMEICMTool(QByteArray ba)
 
     if(ba.contains("Connect device fail")||ba.contains("Connect To cellphone = Fail"))
     {
-        emit tx_TextBoxOutput(Tool_SPD, 1, "Error: Device not connected ", false, false, Qt::red);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "Error");
+        signal.outputString = "Error: Device not connected";
+        signal.outputColor = Qt::red; // GlobalVars::txtOutPutColor;
+        signal.outputBold = false;
+        signal.needtoInsertOutputBox = true;
+        signal.isProcessCompleted = true;
+        signal.progressBarValue = 100;
+        emit tx_ADB_ProcessData(signal);
         return;
     }
 
@@ -803,55 +943,6 @@ void BackEndClass::getADB_ChinoeIMEICMTool(QByteArray ba)
     }
 
 
-    /*
-
-
-    int indx = ba.indexOf("Write IMEI1");
-    ba = ba.right(ba.length() - indx);
-    indx=0;
-    indx = ba.indexOf("Backup ");
-    if(indx <3) indx = ba.indexOf("\r\nWork don");
-    QString sendToGUI = ba.left(indx);
-    sendToGUI.replace("\r", "");
-    sendToGUI = sendToGUI.left(sendToGUI.length()-2);
-    qDebug()<<"\n\n \t sendToGUI: "<<sendToGUI;
-    emit tx_TextBoxOutput(Tool_SPD, 1, QString("Tool: "+sendToGUI), false, false, GlobalVars::txtOutPutColor);
-    qDebug()<<" Left over info: "<<ba;
-    if(ba.contains("Work don")){
-
-        //qDebug()<<" Dual IMEI: "<<GlobalVars::dual_imei_bool;
-        if(GlobalVars::spd_modelStr.contains("E6I")||GlobalVars::spd_modelStr.contains("E7I")) {
-            if(!nowForSecondIMEI && GlobalVars::spd_dual_imei_bool){
-                nowForSecondIMEI = true; timer_SPDTool->start(1000);
-            }
-        }
-        else if(GlobalVars::spd_modelStr.contains("E6s XT2053")||GlobalVars::spd_modelStr.contains("G8 Power Lite XT2055")||GlobalVars::spd_modelStr.contains("E7 Play XT2095")) {
-            if(!nowForSecondIMEI && GlobalVars::spd_dual_imei_bool){
-                nowForSecondIMEI = true; timer_SPDTool->start(1000);
-            }
-        }
-        else if(GlobalVars::spd_modelStr.contains("G20")) {
-
-        }
-
-        if(GlobalVars::spd_dual_imei_bool == false) nowForSecondIMEI = true;
-
-        //if(timer_singleShot->isActive()) qDebug()<<" QTimer is started Again: "<<nowForSecondIMEI<<"  Dual IMEI: "<<GlobalVars::dual_imei_bool;
-        //else qDebug()<<" QTimer is not Active : "<<nowForSecondIMEI<<"  Dual IMEI: "<<GlobalVars::dual_imei_bool;
-
-
-        if(nowForSecondIMEI){
-            emit tx_TextBoxOutput(Tool_SPD, 1, "Task successfuly Completed", false, false, GlobalVars::txtOutPutColor);
-            emit tx_miscOperations(Tool_SPD, 1, 100, "success");
-        }
-        else
-        {
-            emit tx_TextBoxOutput(Tool_SPD, 1,"Task IMEI-1 Completed.", false, false, GlobalVars::txtOutPutColor);
-            emit tx_TextBoxOutput(Tool_SPD, 1,"Writing IMEI-2: wait.", true, false, Qt::white);
-            emit tx_miscOperations(Tool_SPD, 1, 75, "");
-        }
-    } */
-
 }
 void BackEndClass::get_ChinoeDirectory1(QByteArray ba)
 {
@@ -865,7 +956,13 @@ void BackEndClass::get_ChinoeDirectory1(QByteArray ba)
     sendToGUI.replace("\r", "");
     sendToGUI = sendToGUI.left(sendToGUI.length()-2);
     qDebug()<<"\n\n \t sendToGUI: "<<sendToGUI;
-    emit tx_TextBoxOutput(Tool_SPD, 1, QString("Tool: "+sendToGUI), false, false, GlobalVars::txtOutPutColor);
+
+    signal.outputString = QString("Tool: "+sendToGUI);
+    signal.outputColor = GlobalVars::txtOutPutColor;
+    signal.outputBold = false;
+    signal.needtoInsertOutputBox = true;
+    emit tx_ADB_ProcessData(signal);
+
     qDebug()<<" Left over info: "<<ba;
     if(ba.contains("Work don")){
 
@@ -877,18 +974,36 @@ void BackEndClass::get_ChinoeDirectory1(QByteArray ba)
         //if(timer_singleShot->isActive()) qDebug()<<" QTimer is started Again: "<<nowForSecondIMEI<<"  Dual IMEI: "<<GlobalVars::dual_imei_bool;
         //else qDebug()<<" QTimer is not Active : "<<nowForSecondIMEI<<"  Dual IMEI: "<<GlobalVars::dual_imei_bool;
 
-
         if(nowForSecondIMEI){
-            emit tx_TextBoxOutput(Tool_SPD, 1, "Task successfuly Completed", false, false, GlobalVars::txtOutPutColor);
-            emit tx_miscOperations(Tool_SPD, 1, 100, "success");
+            sendOperationDetailsToServerToReduceCredit();
+
+            signal.outputString = "Task successfully Completed";
+            signal.outputColor = GlobalVars::txtOutPutColor;
+            signal.outputBold = false;
+            signal.needtoInsertOutputBox = true;
+            signal.isProcessCompleted = true;
+            signal.progressBarValue = 100;
+            signal.upload_LogHistory = true;
+            emit tx_ADB_ProcessData(signal);
+
         }
         else
         {
-            emit tx_TextBoxOutput(Tool_SPD, 1,"Task IMEI-1 Completed.", false, false, GlobalVars::txtOutPutColor);
-            emit tx_TextBoxOutput(Tool_SPD, 1,"Writing IMEI-2: wait.", true, false, Qt::white);
-            emit tx_miscOperations(Tool_SPD, 1, 75, "");
+            signal.outputString = "Task IMEI-1 Completed.";
+            signal.outputColor = GlobalVars::txtOutPutColor;
+            signal.outputBold = false;
+            signal.needtoInsertOutputBox = true;
+            signal.progressBarValue = 75;
+            emit tx_ADB_ProcessData(signal);
+
+
+            signal.outputString = "Writing IMEI-2: wait.";
+            signal.outputColor = Qt::white; // GlobalVars::txtOutPutColor;
+            signal.outputBold = false;
+            emit tx_ADB_ProcessData(signal);
         }
     }
+
 }
 void BackEndClass::get_ChinoeDirectory2(QByteArray ba)
 {
@@ -903,7 +1018,13 @@ void BackEndClass::get_ChinoeDirectory2(QByteArray ba)
     sendToGUI.replace("\r", "");
     sendToGUI = sendToGUI.left(sendToGUI.length()-2);
     qDebug()<<"\n\n \t sendToGUI: "<<sendToGUI;
-    emit tx_TextBoxOutput(Tool_SPD, 1, QString("Tool: "+sendToGUI), false, false, GlobalVars::txtOutPutColor);
+
+    signal.outputString = QString("Tool: "+sendToGUI);
+    signal.outputColor = GlobalVars::txtOutPutColor;
+    signal.outputBold = false;
+    signal.needtoInsertOutputBox = true;
+    emit tx_ADB_ProcessData(signal);
+
     qDebug()<<" Left over info: "<<ba;
     if(ba.contains("Work don")){
         if(!nowForSecondIMEI && GlobalVars::spd_dual_imei_bool){
@@ -914,18 +1035,32 @@ void BackEndClass::get_ChinoeDirectory2(QByteArray ba)
         //if(timer_singleShot->isActive()) qDebug()<<" QTimer is started Again: "<<nowForSecondIMEI<<"  Dual IMEI: "<<GlobalVars::dual_imei_bool;
         //else qDebug()<<" QTimer is not Active : "<<nowForSecondIMEI<<"  Dual IMEI: "<<GlobalVars::dual_imei_bool;
 
-
         if(nowForSecondIMEI){
-            emit tx_TextBoxOutput(Tool_SPD, 1, "Task successfuly Completed", false, false, GlobalVars::txtOutPutColor);
-            emit tx_miscOperations(Tool_SPD, 1, 100, "success");
+            sendOperationDetailsToServerToReduceCredit();
+            signal.outputString = "Task successfully Completed.";
+            signal.outputColor =  GlobalVars::txtOutPutColor;
+            signal.outputBold = true;
+            signal.needtoInsertOutputBox = true;
+            signal.isProcessCompleted = true;
+            signal.progressBarValue = 100;
+            signal.upload_LogHistory = true;
+            emit tx_ADB_ProcessData(signal);
         }
         else
         {
-            emit tx_TextBoxOutput(Tool_SPD, 1,"Task IMEI-1 Completed.", false, false, GlobalVars::txtOutPutColor);
-            emit tx_TextBoxOutput(Tool_SPD, 1,"Writing IMEI-2: wait.", true, false, Qt::white);
-            emit tx_miscOperations(Tool_SPD, 1, 75, "");
+            signal.outputString = "Task IMEI-1 Completed.";
+            signal.outputColor = GlobalVars::txtOutPutColor;
+            signal.outputBold = false;
+            signal.needtoInsertOutputBox = true;
+            signal.isProcessCompleted = false;
+            signal.progressBarValue = 75;
+            emit tx_ADB_ProcessData(signal);
+
+            signal.outputString = "Writing IMEI-2: Wait.";
+            emit tx_ADB_ProcessData(signal);
         }
     }
+
 }
 void BackEndClass::get_ChinoeDirectory3(QByteArray ba)
 {
@@ -943,7 +1078,12 @@ void BackEndClass::get_ChinoeDirectory3(QByteArray ba)
         // finding , after Track id
         indx = ba.indexOf(",");
         required_data = ba.left(indx);
-        emit tx_TextBoxOutput(Tool_SPD, 1, QString("Tracking ID: "+ required_data), false, false, GlobalVars::txtOutPutColor);
+
+        signal.outputString = QString("Tracking ID: "+required_data);
+        signal.outputColor = GlobalVars::txtOutPutColor;
+        signal.outputBold = false;
+        signal.needtoInsertOutputBox = true;
+        emit tx_ADB_ProcessData(signal);
     }
     if(ba.contains("Write Simlock = "))
     {
@@ -956,22 +1096,43 @@ void BackEndClass::get_ChinoeDirectory3(QByteArray ba)
         // finding , after Track id
         indx = ba.indexOf(",");
         required_data = ba.left(indx);
-        emit tx_TextBoxOutput(Tool_SPD, 1, QString("Write Simlock: "+ required_data), false, false, GlobalVars::txtOutPutColor);
+        signal.outputString = QString("Write SimLock: " + required_data);
+        signal.outputColor = GlobalVars::txtOutPutColor;
+        signal.needtoInsertOutputBox = true;
+        emit tx_ADB_ProcessData(signal);
     }
     if(ba.contains("Total Test Result = PASS"))
     {
-        emit tx_TextBoxOutput(Tool_SPD, 1, "Task successfuly Completed", false, false, GlobalVars::txtOutPutColor);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "success");
+        sendOperationDetailsToServerToReduceCredit();
+
+        signal.outputString = "Task Successfully Completed";
+        signal.outputColor = GlobalVars::txtOutPutColor;
+        signal.outputBold = true;
+        signal.needtoInsertOutputBox = true;
+        signal.progressBarValue = 100;
+        signal.isProcessCompleted = true;
+        signal.upload_LogHistory = true;
+        emit tx_ADB_ProcessData(signal);
     }
     else if(ba.contains("Total Test Result = FAIL"))
     {
-        emit tx_TextBoxOutput(Tool_SPD, 1, "Test Result Failed", false, false, Qt::red);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "success");
+        signal.outputString = "Test Result Failed";
+        signal.outputColor = Qt::red; // GlobalVars::txtOutPutColor;
+        signal.outputBold = false;
+        signal.needtoInsertOutputBox = true;
+        signal.progressBarValue = 100;
+        signal.isProcessCompleted = true;
+        emit tx_ADB_ProcessData(signal);
     }
     else if(ba.contains("Connect To cellphone = Fail"))
     {
-        emit tx_TextBoxOutput(Tool_SPD, 1, "Connect To cellphone = Fail", false, false, Qt::red);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "success");
+        signal.outputString = "Coonect to the CellPhone = Fail";
+        signal.outputColor = Qt::red; // GlobalVars::txtOutPutColor;
+        signal.outputBold = false;
+        signal.needtoInsertOutputBox = true;
+        signal.progressBarValue = 100;
+        signal.isProcessCompleted = true;
+        emit tx_ADB_ProcessData(signal);
     }
 
 }
@@ -984,8 +1145,10 @@ void BackEndClass::getFastBoot_info(QByteArray ba)
     //frp_uniqID = "";
     int idx = 0;
     QString requiredData = "";
+    bool needToincremenrTheIndex = false;
     // ---------- FRP ------------
     if(ba.contains("has-slot:frp:")){
+        needToincremenrTheIndex = true;
         idx = ba.indexOf("has-slot:frp:");
         ba = ba.right(ba.length() - idx);
         idx = ba.indexOf("frp:");
@@ -995,32 +1158,44 @@ void BackEndClass::getFastBoot_info(QByteArray ba)
         qDebug()<<" aa :: "<<ba;
         idx = ba.indexOf("\r\n");
         requiredData = ba.left(idx);
-        emit tx_TextBoxOutput(currentToolType, 1,QString("FRP = "+ requiredData), false, false, GlobalVars::txtOutPutColor);
+
+        signal.outputString = QString("FRP = "+requiredData);
+        signal.outputColor = GlobalVars::txtOutPutColor;
+        signal.outputBold = false;
+        signal.needtoInsertOutputBox = true;
+        emit tx_ADB_ProcessData(signal);
     }
     // ---------- Model ------------
     if(ba.contains("ro.boot.hardware.sku:")){
+        needToincremenrTheIndex = true;
         idx = ba.indexOf("ro.boot.hardware.sku:");
         ba = ba.right(ba.length() - idx);
         idx = ba.indexOf(":");
         ba = ba.right(ba.length() - (idx+1));
         idx = ba.indexOf("\r\n");
         requiredData = ba.left(idx);
-        emit tx_TextBoxOutput(currentToolType, 1,QString("Model = "+ requiredData), false, false, GlobalVars::txtOutPutColor);
+
+        signal.outputString = QString("Model = "+requiredData);
+        emit tx_ADB_ProcessData(signal);
     }
 
     // ---------- Android Version ------------
     if(ba.contains("version-bootloader:")){
+        needToincremenrTheIndex = true;
         idx = ba.indexOf("version-bootloader:");
         ba = ba.right(ba.length() - idx);
         idx = ba.indexOf(":");
         ba = ba.right(ba.length() - (idx+1));
         idx = ba.indexOf("\r\n");
         requiredData = ba.left(idx);
-        emit tx_TextBoxOutput(currentToolType, 1,QString("Android Version = "+ requiredData), false, false, GlobalVars::txtOutPutColor);
+
+        signal.outputString = QString("Android Version: "+requiredData);
+        emit tx_ADB_ProcessData(signal);
     }
 
     // ---------- Device product Name ------------
     if(ba.contains("product_name:")){
+        needToincremenrTheIndex = true;
         idx = ba.indexOf("product_name:");
         ba = ba.right(ba.length() - idx);
         idx = ba.indexOf(":");
@@ -1028,11 +1203,14 @@ void BackEndClass::getFastBoot_info(QByteArray ba)
         idx = ba.indexOf("\r\n");
         requiredData = ba.left(idx);
         frp_ProdName = requiredData;
-        emit tx_TextBoxOutput(currentToolType, 1,QString("Product Name = "+ frp_ProdName), false, false, GlobalVars::txtOutPutColor);
+
+        signal.outputString = QString("Product Name = "+frp_ProdName);
+        emit tx_ADB_ProcessData(signal);
     }
 
     // ---------- Device Unique ID ------------
     if(ba.contains("unlock_raw_data:")){
+        needToincremenrTheIndex = true;
         idx = ba.indexOf("unlock_raw_data:");
         ba = ba.right(ba.length() - idx);
         idx = ba.indexOf(":");
@@ -1041,10 +1219,13 @@ void BackEndClass::getFastBoot_info(QByteArray ba)
         requiredData = ba.left(idx);
         frp_uniqID = requiredData;
         frp_infoCompleted = true;
-        emit tx_TextBoxOutput(currentToolType, 1,QString("Device Unique ID = "+ requiredData), false, false, GlobalVars::txtOutPutColor);
+
+        signal.outputString = QString("Device Unique ID:"+requiredData);
+        emit tx_ADB_ProcessData(signal);
     }
-    else
-    {
+
+    if(needToincremenrTheIndex) {
+        qDebug()<<" FRP index:"<<frpInfoIndex;
         frpInfoIndex++;
         timer_SPDTool->start(300);
     }
@@ -1060,12 +1241,18 @@ void BackEndClass::get_FRP_PushFile(QByteArray ba)
 {
     qDebug()<<"get_FRP_PushFile::  "<<ba;
 
-    //emit tx_TextBoxOutput(currentToolType, 1, QString("PushFile : " + ba), false, false, GlobalVars::txtOutPutColor);
+    //emit tx_TextBoxOutput(signal.currentTool, 1, QString("PushFile : " + ba), false, false, GlobalVars::txtOutPutColor);
 
+    fastbootEraseDone = false;
+    if(ba.toLower().contains("erase partition for assign partition") && !fastBootPushCommandDone){
+        fastBootPushCommandDone = true;
+        signal.outputString = "Device FRP Execution : OK";
+        signal.outputColor = GlobalVars::txtOutPutColor;
+        signal.outputBold = false;
+        signal.needtoInsertOutputBox = true;
+        signal.progressBarValue = 60;
+        emit tx_ADB_ProcessData(signal);
 
-    if(ba.toLower().contains("erase partition for assign partition")){
-        emit tx_miscOperations(currentToolType, 1, 60, "");
-        emit tx_TextBoxOutput(currentToolType, 1, QString("Device FRP Execution : OK"), false, false, GlobalVars::txtOutPutColor);
         currentADB = ADB_FRP_FastBootErase;
         timer_SPDTool->start(500);
     }
@@ -1073,13 +1260,15 @@ void BackEndClass::get_FRP_PushFile(QByteArray ba)
 void BackEndClass::get_FRP_FastBootErase(QByteArray ba)
 {
     qDebug()<<"get_FRP_FastBootErase::  "<<ba;
-
-    if(ba.contains("Erasing 'frp'")){
+    if(ba.contains("Erasing 'frp'") && !fastbootEraseDone){
+        fastbootEraseDone = true;
         int idx = ba.indexOf("Erasing 'frp'");
         ba = ba.right(ba.length() - idx);
 
-        emit tx_miscOperations(currentToolType, 1, 75, "");
-        emit tx_TextBoxOutput(currentToolType, 1, QString("Removing Device FRP : OK"), false, false, GlobalVars::txtOutPutColor);
+        signal.outputString = QString("Removing Device FRP : OK");
+        signal.needtoInsertOutputBox = true;
+        signal.progressBarValue = 75;
+        emit tx_ADB_ProcessData(signal);
 
         currentADB = ADB_FRP_Fast_Reboot;
         timer_SPDTool->start(500);
@@ -1089,12 +1278,26 @@ void BackEndClass::get_FRP_FastBootErase(QByteArray ba)
 void BackEndClass::get_FRP_Fast_Reboot(QByteArray ba)
 {
     qDebug()<<"get_FRP_Fast_Reboot::  "<<ba;
-    if(ba.contains("Rebooting                                          OKAY ")){
-        emit tx_miscOperations(currentToolType, 1, 90, "");
-        emit tx_TextBoxOutput(currentToolType, 1, QString("Rebooting : OK"), false, false, GlobalVars::txtOutPutColor);
+    if(ba.contains("Rebooting      ")){
+        signal.outputString = "Rebooting : OK";
+        signal.outputColor = GlobalVars::txtOutPutColor;
+        signal.needtoInsertOutputBox = true;
+        signal.progressBarValue = 90;
+        emit tx_ADB_ProcessData(signal);
+
+        sendOperationDetailsToServerToReduceCredit();
+
+        signal.outputString = "FRP Process: Successfull.";
+        signal.outputColor = GlobalVars::txtOutPutColor;
+        signal.outputBold = true;
+        signal.needtoInsertOutputBox = true;
+        signal.isProcessCompleted = true;
+        signal.progressBarValue = 100;
+        signal.upload_LogHistory = true;
+        emit tx_ADB_ProcessData(signal);
+
+
     }
-    emit tx_miscOperations(currentToolType, 1, 100, "success");
-    emit tx_TextBoxOutput(currentToolType, 1, QString("FRP Process: Sucessfull."), true, false, GlobalVars::txtOutPutColor);
 
 }
 
@@ -1104,7 +1307,14 @@ void BackEndClass::getADB_UnLockSIMTool(QByteArray ba)
     qDebug()<<"getADB_UnLockSIMTool::  "<<ba;
     if(ba.contains("device fail"))
     {
-        emit tx_TextBoxOutput(Tool_SPD, 1,"Error: Device Fail to connect.", true, false, Qt::red);
+        signal.outputString = "Error: Device Fail to connect.";
+        signal.outputColor = Qt::red; // GlobalVars::txtOutPutColor;
+        signal.outputBold = false;
+        signal.needtoInsertOutputBox = true;
+        signal.isProcessCompleted = true;
+        signal.progressBarValue = 100;
+        signal.upload_LogHistory = true;
+        emit tx_ADB_ProcessData(signal);
         return;
     }
     //int idx = ba.indexOf("UnlockCode generated:");
@@ -1122,16 +1332,36 @@ void BackEndClass::getADB_UnLockSIMTool(QByteArray ba)
     QString unLockCode = ba.left(idx);
     unLockCode.replace("\r","");
     unLockCode.replace("\n","");
-    emit tx_TextBoxOutput(Tool_SPD, 1, QString("unLock Code: "+unLockCode), true, false, Qt::white);
+
+    signal.outputString = QString("unLock Code: "+ unLockCode);
+    signal.outputColor = Qt::white; // GlobalVars::txtOutPutColor;
+    signal.outputBold = true;
+    signal.needtoInsertOutputBox = true;
+    emit tx_ADB_ProcessData(signal);
+
     if(ba.contains("Work do"))
     {
-        emit tx_TextBoxOutput(Tool_SPD, 1, "Task successfuly Completed", false, false, GlobalVars::txtOutPutColor);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "success");
+        sendOperationDetailsToServerToReduceCredit();
+
+        signal.outputString = "Task Successfully Completed.";
+        signal.outputColor = GlobalVars::txtOutPutColor;
+        signal.outputBold = true;
+        signal.needtoInsertOutputBox = true;
+        signal.isProcessCompleted = true;
+        signal.progressBarValue = 100;
+        signal.upload_LogHistory = true;
+        emit tx_ADB_ProcessData(signal);
     }
     else
     {
-        emit tx_TextBoxOutput(Tool_SPD, 1, "Task Failed", false, false, Qt::red);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "Error");
+        signal.outputString = "Task Failed.";
+        signal.outputColor = Qt::red; // GlobalVars::txtOutPutColor;
+        signal.outputBold = false;
+        signal.needtoInsertOutputBox = true;
+        signal.isProcessCompleted = true;
+        signal.progressBarValue = 100;
+        signal.upload_LogHistory = true;
+        emit tx_ADB_ProcessData(signal);
     }
 
 }
@@ -1143,12 +1373,20 @@ void BackEndClass::rx_ADB_ErrorReceived()
     if(currentADB == ADB_Reboot && spd_commandError.length()>2){
         getADB_rebootCommand(spd_commandError.toUtf8());
     }
+
+
+
     if(spd_commandError.contains("adb.exe: no devices/emulators found")){
-        emit tx_TextBoxOutput(Tool_SPD, 1, "No Device Found.", true, false, Qt::red);
-        emit tx_miscOperations(Tool_SPD, 1, 100, "No Device");
+        signal.outputString = "No Devices/Emulators Found.";
+        signal.outputColor = Qt::red; // GlobalVars::txtOutPutColor;
+        signal.outputBold = false;
+        signal.needtoInsertOutputBox = true;
+        signal.isProcessCompleted = true;
+        signal.progressBarValue = 100;
+        emit tx_ADB_ProcessData(signal);
     }
 
-    if(currentToolType == Tool_SPD_FRP_FastBoot)
+    if(signal.currentTool == Tool_SPD_FRP_FastBoot)
     {
         switch (currentADB) {
         case ADB_Model: getADB_Model(spd_commandError.toUtf8()); break;
@@ -1168,7 +1406,7 @@ void BackEndClass::rx_updateADBdevices()
     adb_InfoOnly = true;
     nowForSecondIMEI = false;
     actualADBcommands = false;
-    currentToolType = Tool_SPD;
+    signal.currentTool = Tool_SPD;
     adbProcess->setWorkingDirectory(adbFolderPath);
 
     currentADB = ADB_ConnectedDevice;
@@ -1194,6 +1432,7 @@ void BackEndClass::rx_updateADBdevices()
     //adbProcess->waitForReadyRead(1000);
     adbProcess->waitForFinished(1000);
 }
+
 
 
 
@@ -1252,8 +1491,13 @@ bool BackEndClass::getServerFastBoot_File()
         fastBoot_FileName = QString (fastBootFolderPath+"/signature_"+ frp_PassWord);
         qDebug()<<" FRP File Path: "<<fastBoot_FileName;
         qDebug()<<"\n\n";
-        emit tx_miscOperations(currentToolType, 1, 40, "");
-        emit tx_TextBoxOutput(currentToolType, 1, QString("Getting FastBoot data from Server: OK"), false, false, GlobalVars::txtOutPutColor);
+
+        signal.outputString = "Getting FastBoot data from Server: OK";
+        signal.outputColor = GlobalVars::txtOutPutColor;
+        signal.outputBold = false;
+        signal.needtoInsertOutputBox = true;
+        signal.progressBarValue = 40;
+        emit tx_ADB_ProcessData(signal);
 
         QFile frpF(fastBoot_FileName);
         if(frpF.open(QIODevice::WriteOnly))
@@ -1262,26 +1506,44 @@ bool BackEndClass::getServerFastBoot_File()
             //QTextStream out(&frpF);
               //  out << text;
             frpF.write(text);
-            emit tx_miscOperations(currentToolType, 1, 45, "");
-            emit tx_TextBoxOutput(currentToolType, 1, QString("Created FastBoot File: OK."), false, false, GlobalVars::txtOutPutColor);
+
+            signal.outputString = "Created FastBoot File: OK.";
+            signal.outputColor = GlobalVars::txtOutPutColor;
+            signal.outputBold = false;
+            signal.needtoInsertOutputBox = true;
+            signal.progressBarValue = 50;
+            emit tx_ADB_ProcessData(signal);
+            fastBootPushCommandDone = false;
             currentADB = ADB_FRP_PushFile;
             timer_SPDTool->start(500);
         } else {
             qDebug()<<" Error in Writing FastBoot File.";
-            emit tx_miscOperations(currentToolType, 1, 100, "Error");
-            emit tx_TextBoxOutput(currentToolType, 1, QString("Error in FastBoot File."), false, false, Qt::red);
+            signal.outputString = "Error in FastBoot File.";
+            signal.outputColor = Qt::red; // GlobalVars::txtOutPutColor;
+            signal.outputBold = true;
+            signal.needtoInsertOutputBox = true;
+            signal.isProcessCompleted = true;
+            signal.progressBarValue = 100;
+            signal.upload_LogHistory = true;
+            emit tx_ADB_ProcessData(signal);
             return false;
         }
         frpF.close();
     } else {
-        emit tx_miscOperations(currentToolType, 1, 100, "Error");
-        emit tx_TextBoxOutput(currentToolType, 1, QString("Error in FastBoot File."), false, false, Qt::red);
+
+        signal.outputString = "Error in FastBoot File.";
+        signal.outputColor = Qt::red; // GlobalVars::txtOutPutColor;
+        signal.outputBold = true;
+        signal.needtoInsertOutputBox = true;
+        signal.isProcessCompleted = true;
+        signal.progressBarValue = 100;
+        signal.upload_LogHistory  = true;
+        emit tx_ADB_ProcessData(signal);
+
         return false;
     }
     return true;
 }
-
-
 
 bool BackEndClass::getServerIMEInumber_updateGlobal()
 {
@@ -1312,18 +1574,19 @@ bool BackEndClass::getServerIMEInumber_updateGlobal()
         QNetworkReply *reply = nam.post(req, data.toBase64());
         connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
         loop.exec();
-        if(processStartStop ==  false){
-            return false;
-        }
-        emit tx_miscOperations(currentToolType, 1, 40, "");
-        emit tx_TextBoxOutput(currentToolType, 1, QString("Geting IMEI from Server: OK"), false, false, GlobalVars::txtOutPutColor);
+        if(processStartStop ==  false){ return false; }
+
+        signal.outputString = "Getting IMEI from Server: OK";
+        signal.outputColor = GlobalVars::txtOutPutColor;
+        signal.outputBold = false;
+        signal.needtoInsertOutputBox = true;
+        signal.progressBarValue = 40;
+        emit tx_ADB_ProcessData(signal);
 
         QByteArray buffer = reply->readAll();
         //qDebug()<<" reply:: "<<buffer;
         reply->deleteLater();
-        if(processStartStop ==  false){
-            return false;
-        }
+        if(processStartStop ==  false){ return false; }
         buffer = QByteArray::fromBase64(buffer);
         qDebug()<<"\n\n\n IMEI response_data::"<<buffer;
         //qDebug()<<"\n\n";
@@ -1335,31 +1598,38 @@ bool BackEndClass::getServerIMEInumber_updateGlobal()
         qDebug()<<" isError: "<<jsonBuffer.value("isError"); //.value("AccessToken");
         qDebug()<<"\n\n ";
 
-        if (jsonBuffer.value("isError") == "true")
+        if (jsonBuffer.value("isError").toBool() == true)
         {
-            emit tx_miscOperations(currentToolType, 1, 100, "Error iMEI");
-            emit tx_TextBoxOutput(currentToolType, 1, "Failed to get IMEI-1 from Server", true, false, QColor::fromRgb(255, 192, 192));
+            signal.outputString = "Failed to get IMEI-1 from Server";
+            signal.outputColor = Qt::red; // GlobalVars::txtOutPutColor;
+            signal.outputBold = false;
+            signal.needtoInsertOutputBox = true;
+            signal.isProcessCompleted = true;
+            signal.progressBarValue = 100;
+            emit tx_ADB_ProcessData(signal);
+
             return false;
         }
         if (GlobalVars::spd_dual_imei_bool) //(buffer.toLower().contains("&"))
         {
             QJsonValue buffer1 = jsonBuffer.value("Model");
             GlobalVars::spd_imei_1 = buffer1.toString();
+
             reply = nam.post(req, data.toBase64());
             connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
             loop.exec();
-            if(processStartStop ==  false){
-                return false;
-            }
-            emit tx_miscOperations(currentToolType, 1, 50, "");
-            emit tx_TextBoxOutput(currentToolType, 1, QString("Geting IMEI-2 from Server: OK"), false, false, GlobalVars::txtOutPutColor);
+            if(processStartStop ==  false){ return false; }
 
+            signal.outputString = "Getting IMEI-2 from Server: OK";
+            signal.outputColor = GlobalVars::txtOutPutColor;
+            signal.outputBold = false;
+            signal.needtoInsertOutputBox = true;
+            signal.progressBarValue = 50;
+            emit tx_ADB_ProcessData(signal);
 
             QByteArray buffer = reply->readAll();
             reply->deleteLater();
-            if(processStartStop ==  false){
-                return false;
-            }
+            if(processStartStop ==  false){ return false; }
             buffer = QByteArray::fromBase64(buffer);
             qDebug()<<"\n\n\n IMEI-2 response_data::"<<buffer;
             //qDebug()<<"\n\n";
@@ -1371,9 +1641,15 @@ bool BackEndClass::getServerIMEInumber_updateGlobal()
             qDebug()<<" isError: "<<jsonBuffer.value("isError"); //.value("AccessToken");
             qDebug()<<"\n\n ";
 
-            if (jsonBuffer.value("isError") == "true") {
-                emit tx_miscOperations(currentToolType, 1, 100, "Error iMEI");
-                emit tx_TextBoxOutput(currentToolType, 1, "Failed to get IMEI-1 from Server", true, false, QColor::fromRgb(255, 192, 192));
+            if (jsonBuffer.value("isError").toBool() == true) {
+                signal.outputString = "Failed to get IMEI-2 from Server.";
+                signal.outputColor = Qt::red; // GlobalVars::txtOutPutColor;
+                signal.outputBold = false;
+                signal.needtoInsertOutputBox = true;
+                signal.isProcessCompleted = true;
+                signal.progressBarValue = 100;
+                emit tx_ADB_ProcessData(signal);
+
                 return false;
             }
             QJsonValue imei2 = jsonBuffer.value("Model");
@@ -1384,14 +1660,86 @@ bool BackEndClass::getServerIMEInumber_updateGlobal()
             QJsonValue buffer1 = jsonBuffer.value("Model");
             GlobalVars::spd_imei_1 = buffer1.toString();
         }
-        //qDebug()<<" Writing this code in cmd: "<<authenReply;
+        qDebug()<<"******ADB IMEI-1: "<<GlobalVars::spd_imei_1<<" IMEI-2:"<<GlobalVars::spd_imei_2;
     }
 
     return true;
 }
 
+bool BackEndClass::sendOperationDetailsToServerToReduceCredit()
+{
+
+    QByteArray postdata;  QJsonObject obj;
+
+    if(signal.currentTool == Tool_SPD)
+        obj["OperationName"] = "ADBrepair";
+    else if(signal.currentTool == Tool_UnLock)
+        obj["OperationName"] = "ADBunlock";
+    else if(signal.currentTool == Tool_SPD_FRP_FastBoot)
+        obj["OperationName"] = "FastBootFRP";
 
 
+
+    obj["DeviceName"] = GlobalVars::spd_modelStr;
+    QJsonDocument doc(obj);
+    postdata = doc.toJson();
+    qDebug()<<" \n\n ByteArray:"<<postdata<<" Base64::"<<postdata.toBase64();
+    if(processStartStop ==  false){ return false; }
+    QEventLoop loop;
+    QNetworkAccessManager nam;
+    QNetworkRequest req;
+    req.setUrl(QUrl(GlobalVars::api_MTKcharges));
+    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
+
+    QNetworkReply *reply = nam.post(req, postdata.toBase64());
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+    if(processStartStop ==  false){ return false; }
+    QByteArray buffer = reply->readAll();
+    buffer = QByteArray::fromBase64(buffer);
+    reply->deleteLater();
+    qDebug()<<"\n\n\n ADB response_data::"<<buffer;
+    qDebug()<<"\n\n";
+    QJsonDocument document = QJsonDocument::fromJson(buffer);
+    QJsonObject jsonBuffer = document.object();
+    //qDebug()<<"Server Authentication reply:: "<<jsonBuffer;
+    qDebug()<<" isError: "<<jsonBuffer.value("isError");
+    qDebug()<<" Model: "<<jsonBuffer.value("Model");
+    qDebug()<<" Message: "<<jsonBuffer.value("Message");
+    qDebug()<<"\n\n ";
+    if (jsonBuffer.value("isError").toBool() == false)
+    {
+        QJsonValue buffer1 = jsonBuffer.value("Model");
+        //qDebug()<<" QJsonValue Model: "<<buffer1;
+        QJsonObject bufferModel = buffer1.toObject();
+        GlobalVars::operationID = bufferModel.value("OperationId").toDouble();
+        GlobalVars::userInfo_creditDetails = bufferModel.value("Credit").toDouble();
+        qDebug()<<" operationID : "<<GlobalVars::operationID;
+        qDebug()<<"\n\n ";
+
+        signal.outputString = QString("OperationID:"+QString::number(GlobalVars::operationID,'f',0));
+        signal.outputColor = GlobalVars::txtOutPutColor;
+        signal.outputBold = false;
+        signal.needtoInsertOutputBox = true;
+        emit tx_ADB_ProcessData(signal);
+    }
+    else if (jsonBuffer.value("isError").toBool() == true)
+    {
+        GlobalVars::operationID = 0.0;
+        qDebug()<<" operationID : "<<GlobalVars::operationID;
+        qDebug()<<"\n\n ";
+        signal.outputString = QString("OperationID: "+QString::number(GlobalVars::operationID, 'f', 0));
+        signal.outputColor = GlobalVars::txtOutPutColor;
+        signal.outputBold = false;
+        signal.needtoInsertOutputBox = true;
+        emit tx_ADB_ProcessData(signal);
+    }
+
+
+
+    return true;
+}
 
 
 

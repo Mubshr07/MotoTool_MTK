@@ -10,6 +10,7 @@ enum MMM_Commands{
     MMM_Exit
 };
 enum TOOL_TYPE{
+    Tool_Idle,
     Tool_MTK,
     Tool_MTK_UnLock,
     Tool_SPD,
@@ -72,6 +73,20 @@ enum ADB_Commands{
 
 
 #include "qdebug.h"
+
+struct signalStructure {
+  TOOL_TYPE currentTool;
+  int   toolIndex;
+   QString outputString;
+   bool outputBold;
+   bool outputNewLine;
+   bool needtoInsertOutputBox;
+   QColor outputColor;
+   int progressBarValue;
+   bool isProcessCompleted;
+    bool upload_LogHistory;
+};
+
 
 class GlobalVars
 {
@@ -139,5 +154,6 @@ Q_DECLARE_METATYPE(QList<QSerialPortInfo>);
 Q_DECLARE_METATYPE(MMM_Commands);
 Q_DECLARE_METATYPE(TOOL_TYPE);
 Q_DECLARE_METATYPE(ADB_Commands);
+Q_DECLARE_METATYPE(signalStructure);
 
 #endif // GLOBALVARS_H

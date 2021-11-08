@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1260</width>
-    <height>622</height>
+    <width>972</width>
+    <height>407</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -519,7 +519,7 @@ font:500 12pt &quot;MS Shell Dlg 2&quot;;</string>
           </sizepolicy>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="tab">
           <attribute name="title">

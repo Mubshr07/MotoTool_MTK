@@ -5,6 +5,11 @@ MetaModeThread::MetaModeThread(QObject *parent) : QObject(parent)
     timer_Meta_singleShot = new QTimer(this);
     timer_Meta_singleShot->setSingleShot(true);
     connect(timer_Meta_singleShot, SIGNAL(timeout()), this, SLOT(rx_timer_Meta_singleShot()));
+    timer_AppMaxTime = new QTimer(this);
+    timer_AppMaxTime->setSingleShot(true);
+    connect(timer_AppMaxTime, SIGNAL(timeout()), this, SLOT(on_timer_AppMaxTime_Elapsed()));
+
+    //qDebug()<<" Timer AppMaTime::: "<<timer_AppMaxTime->isActive();
 
     metaProcess = new QProcess(this);
     metaProcess->setProgram(cmdShellPath);
@@ -86,6 +91,9 @@ void MetaModeThread::rx_StartRepairing_metaMode(int idx, bool startStop, TOOL_TY
 
         metaProcess->waitForReadyRead(15000);
         emit tx_miscOperations_metaMode(currentToolType, generalIndex, 10, "");
+        timer_AppMaxTime->start(APP_MAXTIME);
+
+        qDebug()<<" 2 Timer AppMaTime::: "<<timer_AppMaxTime->isActive()<<" time: "<<timer_AppMaxTime->remainingTime();
 
     }
     if(processStartStop ==  false){
@@ -102,11 +110,15 @@ void MetaModeThread::rx_StartRepairing_metaMode(int idx, bool startStop, TOOL_TY
 
 void MetaModeThread::rx_CommandLine_ErrorReceived()
 {
+
+    qDebug()<<" 3 Timer AppMaTime::: "<<timer_AppMaxTime->isActive()<<" time: "<<timer_AppMaxTime->remainingTime();
+    if(timer_AppMaxTime->isActive()) timer_AppMaxTime->stop();
     commandError = metaProcess->readAllStandardError();
     qDebug()<<"\n\n ###################################################### \n rx_CommandLine_ErrorReceived:: "<<commandError;
 }
 void MetaModeThread::rx_CommandLine_OutPutReceived()
 {
+
     if(processStartStop ==  false){
         return;
     }
@@ -188,6 +200,7 @@ void MetaModeThread::check_CarrierFix_Cmd_outPut(QString str)
             GlobalVars::userInfo_creditDetails = bufferModel.value("Credit").toDouble();
             qDebug()<<" operationID : "<<GlobalVars::operationID;
             qDebug()<<"\n\n ";
+            emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, QString("OperationID: "+QString::number(GlobalVars::operationID, 'f', 0)), false, false, GlobalVars::txtOutPutColor);
         }
         if (jsonBuffer.value("isError").toBool() == true)
         {
@@ -329,6 +342,9 @@ void MetaModeThread::check_UnLock_Cmd_outPut(QString str)
         //showThisinDebug = true;
 
 
+        qDebug()<<" 2 Timer AppMaTime::: "<<timer_AppMaxTime->isActive()<<" time: "<<timer_AppMaxTime->remainingTime();
+        if(timer_AppMaxTime->isActive()) timer_AppMaxTime->stop();
+
         currentCommand = MMM_AuthenticationBytes;
         timer_Meta_singleShot->start(500);
     }
@@ -338,6 +354,9 @@ void MetaModeThread::check_UnLock_Cmd_outPut(QString str)
     }
     else if (commandlineOutPut.contains("Motorola Modem Meta Tool Passed."))
     {
+        qDebug()<<" 2 Timer AppMaTime::: "<<timer_AppMaxTime->isActive()<<" time: "<<timer_AppMaxTime->remainingTime();
+        if(timer_AppMaxTime->isActive()) timer_AppMaxTime->stop();
+
         currentCommand = MMM_OK_AfterAuthenticationBytes;
         timer_Meta_singleShot->start(500);
     }
@@ -382,6 +401,7 @@ void MetaModeThread::check_UnLock_Cmd_outPut(QString str)
         if(timer_Meta_singleShot->isActive()) timer_Meta_singleShot->stop();
         timer_Meta_singleShot->start(500);
     }
+
 }
 
 void MetaModeThread::rx_timer_Meta_singleShot()
@@ -505,6 +525,23 @@ void MetaModeThread::rx_timer_Meta_singleShot()
     }
     } // end of sub switch statements
 
+    if(currentCommand != MMM_Exit && currentCommand != MMM_Idle) {
+        if(timer_AppMaxTime->isActive()) timer_AppMaxTime->stop();
+        timer_AppMaxTime->start(APP_MAXTIME);
+    }
+
+}
+
+void MetaModeThread::on_timer_AppMaxTime_Elapsed()
+{
+    qDebug()<<" @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ";
+    qDebug()<<" Process Takes more time then usual so we close this process and exit from cmd. id: "<<generalIndex<<" tool"<<currentToolType;
+    qDebug()<<" @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ";
+    emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex,"Comm port is not working properly.", true, false , Qt::red);
+    emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
+    currentCommand = MMM_Exit;
+    if(timer_Meta_singleShot->isActive()) timer_Meta_singleShot->stop();
+    timer_Meta_singleShot->start(500);
 }
 
 void MetaModeThread::getAuthenticationFromServer(QString strData, QString strIMEI)
@@ -589,6 +626,9 @@ void MetaModeThread::getAuthenticationFromServer(QString strData, QString strIME
         qDebug()<<"\n\n authenReply : "<<authenReply;
         qDebug()<<" authenticationID : "<<GlobalVars::operationID;
         qDebug()<<"\n\n ";
+
+        emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, QString("OperationID: "+QString::number(GlobalVars::operationID, 'f', 0)), false, false, GlobalVars::txtOutPutColor);
+
     }
     if (jsonBuffer.value("isError").toBool() == true)
     {

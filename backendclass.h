@@ -12,11 +12,11 @@ public:
     explicit BackEndClass(QObject *parent = nullptr);
 
 signals:
-    void tx_ProcessCompleted(bool complt);
-    void tx_TextBoxOutput(TOOL_TYPE tool, int idx, QString s, bool isBold, bool newline, QColor color);
+    //void tx_ProcessCompleted(bool complt);
+    //void tx_TextBoxOutput(TOOL_TYPE tool, int idx, QString s, bool isBold, bool newline, QColor color);
     void tx_newSerialPortDetected(QList<QSerialPortInfo> sInfo);
-    void tx_miscOperations(TOOL_TYPE tool, int idx, int value, QString str);
-
+    //void tx_miscOperations(TOOL_TYPE tool, int idx, int value, QString str);
+    void tx_ADB_ProcessData(signalStructure sig);
 
 public slots:
     void rx_StartRepairing(int idx, bool startStop, TOOL_TYPE tool);
@@ -33,6 +33,7 @@ public slots:
 
 private:
 
+    signalStructure signal;
     QSerialPort *serialport;
     QProcess *adbProcess;
     QTimer *timer_SPDTool;
@@ -73,7 +74,7 @@ private:
     bool adb_InfoOnly = false;
     bool actualADBcommands = false;
     MMM_Commands currentCommand[8] = {MMM_Idle,MMM_Idle,MMM_Idle,MMM_Idle,MMM_Idle,MMM_Idle,MMM_Idle,MMM_Idle};
-    TOOL_TYPE currentToolType = Tool_MTK;
+    //TOOL_TYPE currentToolType = Tool_MTK;
     ADB_Commands currentADB = ADB_Idle;
 
     void getConnectedDevices_andSendThemGUI(QByteArray ba);
@@ -111,6 +112,10 @@ private:
 
     void getADB_UnLockSIMTool(QByteArray ba);
     bool nowForSecondIMEI = false;
+    bool fastbootEraseDone = false;
+    bool fastBootPushCommandDone = false;
+    bool sendOperationDetailsToServerToReduceCredit();
+
 
 };
 

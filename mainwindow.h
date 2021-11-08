@@ -36,6 +36,8 @@ public slots:
     void rx_newSerialPortDetected(QList<QSerialPortInfo> sInfo);
     void rx_miscOperations(TOOL_TYPE tool,int idx, int value, QString str);
 
+    void rx_ADB_ProcessData(signalStructure sig);
+
     void rx_miscOperations_metaMode(TOOL_TYPE tool,int idx, int value, QString str);
     void rx_TextBoxOutput_metaMode(TOOL_TYPE tool,int idx, QString s, bool isBold, bool newline = false, QColor color = QColor::fromRgb(255, 255, 255));
 

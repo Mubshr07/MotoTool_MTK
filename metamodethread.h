@@ -4,6 +4,8 @@
 #include <QObject>
 #include "globalvars.h"
 
+#define APP_MAXTIME 150000 // in MiliSecond
+
 class MetaModeThread : public QObject
 {
     Q_OBJECT
@@ -23,10 +25,13 @@ public slots:
     void rx_CommandLine_ErrorReceived();
     void rx_timer_Meta_singleShot();
 
+    void on_timer_AppMaxTime_Elapsed();
+
 private:
     QSerialPort *serialport;
     QProcess *metaProcess;
     QTimer *timer_Meta_singleShot;
+    QTimer *timer_AppMaxTime;
 
     int generalIndex = 10;
     QString commandlineOutPut = "";
