@@ -573,7 +573,7 @@ void MainWindow::rx_ADB_ProcessData(signalStructure sig)
     }
 
     if(sig.isProcessCompleted){
-        qDebug()<<" \n\n\t Operation Completed with value: 100, ";
+        qDebug()<<" \n\n\t Operation Completed with value: 222, ";
 
         ui->pb_Stop_SPD->setEnabled(false);
         ui->pb_StartRepair_SPD->setEnabled(true);
@@ -591,7 +591,7 @@ void MainWindow::rx_ADB_ProcessData(signalStructure sig)
 void MainWindow::rx_TextBoxOutput(TOOL_TYPE tool, int idx, QString s, bool isBold, bool newline, QColor color)
 {
     //qDebug()<<"rx_TextBoxOutput Tool:"<<tool<<" idx:"<<idx<<" QString:"<<s<<" isBold:"<<isBold<<" NewLine:"<<newline<<" Color:"<<color;
-
+    return;
     if(tool == Tool_MTK){
         switch (idx) {
         case 0:{
@@ -671,6 +671,7 @@ void MainWindow::rx_TextBoxOutput(TOOL_TYPE tool, int idx, QString s, bool isBol
 }
 void MainWindow::rx_miscOperations(TOOL_TYPE tool, int idx, int value, QString str)
 {
+    return;
     if(idx == 1){
         ui->processProgress->setValue(value);
         if(value > 30 && value < 60) {

@@ -43,14 +43,14 @@ float GlobalVars::operationID = 0.0;
 
 
 
-QString GlobalVars::api_MTKcharges = QString("http://phpstack-682336-2247161.cloudwaysapps.com/api/MTK/charge");
-QString GlobalVars::api_MTKimeiGenerator = QString("http://phpstack-682336-2247161.cloudwaysapps.com/api/MTK/imei");
-QString GlobalVars::api_MTKserverAuthenticity = QString("http://phpstack-682336-2247161.cloudwaysapps.com/api/MTK/auth");
-QString GlobalVars::api_logURLQString = QString("http://phpstack-682336-2247161.cloudwaysapps.com/api/login");
-QString GlobalVars::api_serverStatusQString = QString("http://phpstack-682336-2247161.cloudwaysapps.com/api/status");
-QString GlobalVars::api_VersionQString = QString("http://phpstack-682336-2247161.cloudwaysapps.com/api/version");
-QString GlobalVars::api_LogQString = QString("http://phpstack-682336-2247161.cloudwaysapps.com/api/log");
-QString GlobalVars::api_PerformQString = QString("http://phpstack-682336-2247161.cloudwaysapps.com/api/perform");
+QString GlobalVars::api_MTKcharges = QString("https://portal.m-key.org/api/MTK/charge");
+QString GlobalVars::api_MTKimeiGenerator = QString("https://portal.m-key.org/api/MTK/imei");
+QString GlobalVars::api_MTKserverAuthenticity = QString("https://portal.m-key.org/api/MTK/auth");
+QString GlobalVars::api_logURLQString = QString("https://portal.m-key.org/api/login");
+QString GlobalVars::api_serverStatusQString = QString("https://portal.m-key.org/api/status");
+QString GlobalVars::api_VersionQString = QString("https://portal.m-key.org/api/version");
+QString GlobalVars::api_LogQString = QString("https://portal.m-key.org/api/log");
+QString GlobalVars::api_PerformQString = QString("https://portal.m-key.org/api/perform");
 
 
 GlobalVars::GlobalVars()
