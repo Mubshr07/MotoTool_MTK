@@ -24,12 +24,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->txt_IMEI_D7_1->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]*"))); ui->txt_IMEI_D7_2->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]*"))); ui->txt_IMEI_D7_2->setEnabled(false);
     ui->txt_IMEI_D8_1->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]*"))); ui->txt_IMEI_D8_2->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]*"))); ui->txt_IMEI_D8_2->setEnabled(false);
 
-    /*
-    qDebug()<<"\n\n SSL lib ";
-    qDebug() << QSslSocket::sslLibraryBuildVersionString();
-    qDebug() << QSslSocket::sslLibraryVersionString();
-    qDebug()<<"\n\n "; */
-
 
     GlobalVars::initalizeToZero();
     initializeObjectsAndStartThread();
@@ -65,6 +59,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     metaTabUniversal = ui->tabWidgetMeta->currentIndex();
 
+    ui->lbl_Credit->setStyleSheet("color:  rgb(255, 153, 0); font:700 14pt 'Microsoft Sans Serif';");
+    ui->lbl_Version->setText(QString("Version: "+QApplication::applicationVersion()));
 }
 
 MainWindow::~MainWindow()
@@ -90,6 +86,11 @@ void MainWindow::on_timer_singleShot_Elapsed()
 // ------------ Button Slots ----------------
 void MainWindow::on_pb_Login_clicked()
 {
+    if(needUpdatedSoftware ){
+        QDesktopServices::openUrl(QUrl("https://m-key.org/"));
+        return;
+    }
+
     /*
     ui->loginFrame->hide();
     ui->processFrame->show();
@@ -144,24 +145,17 @@ void MainWindow::on_pb_Login_clicked()
         GlobalVars::userInfo_UserName = bufferModel.value("UserName").toString();
         //ui->lbl_LoginResults->setText("Server:" + GlobalVars::authorizedToken);
 
-
         if(ui->lbl_SystemID->text() != GlobalVars::userInfo_HardwareKey){
             ui->lbl_LoginResults->setText("HardWare unique ID mismatched.");
             ui->lbl_LoginResults->setStyleSheet("color:red;");
             return;
         }
 
-
-
-
-
         ui->lbl_LoginResults->setText("Login Sucessfull, Credit:" + QString::number(GlobalVars::userInfo_creditDetails, 'f', 2));
         ui->lbl_LoginResults->setStyleSheet("color:lime;");
 
-
-
         // ------------- Server Status Check ---------------------
-        qDebug()<<" \n\n Testing Server is online:";
+        //qDebug()<<" \n\n Testing Server is online:";
         req.setUrl(QUrl(GlobalVars::api_serverStatusQString)); //+"?bearer="+GlobalVars::authorizedToken));
         req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
         reply = nam.get(req); // post(req, postdata);
@@ -170,8 +164,8 @@ void MainWindow::on_pb_Login_clicked()
         document = QJsonDocument::fromJson(reply->readAll());
         buffer = document.object();
 
-        qDebug()<<"Server online check reply:: "<<buffer<<"length : "<<buffer.size();
-        qDebug()<<"\n\n";
+        //qDebug()<<"Server online check reply:: "<<buffer<<"length : "<<buffer.size();
+        //qDebug()<<"\n\n";
 
         buffer1 = buffer.value("Model");
         ui->lbl_loginServerStatus->setText(buffer1.toString());
@@ -180,34 +174,44 @@ void MainWindow::on_pb_Login_clicked()
         else
             ui->lbl_loginServerStatus->setStyleSheet("color:red;");
 
-
-
-
-
-
-
-
         // ------------- Version Check ---------------------
         req.setUrl(QUrl(GlobalVars::api_VersionQString)); //+"?Authorization="+GlobalVars::authorizedToken));
         //req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
         req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
-        qDebug()<<" Version Check: "<<req.url();
+        //qDebug()<<" Version Check: "<<req.url();
         reply = nam.get(req); //post(req, postdata);
         connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
         loop.exec();
         document = QJsonDocument::fromJson(reply->readAll());
         buffer = document.object();
-        qDebug()<<"Version check reply:: "<<buffer<<"length : "<<buffer.size();
-        qDebug()<<"\n\n";
+        //qDebug()<<"Version check reply:: "<<buffer<<"length : "<<buffer.size();
+        //qDebug()<<"\n\n";
         buffer1 = buffer.value("Model");
-        qDebug()<<" QJsonValue Version Model: "<<buffer1;
+        //qDebug()<<" QJsonValue Version Model: "<<buffer1;
         bufferModel = buffer1.toObject();
-        qDebug()<<"\n\n bufferModel 2 : "<<bufferModel;
+        qDebug()<<"\n\n bufferModel 33 : "<<bufferModel;
+
+        GlobalVars::serverSoftwareVersion = bufferModel.value("Version").toString();
+        qDebug()<<" Server Version:: "<<GlobalVars::serverSoftwareVersion;
+
+        if(GlobalVars::serverSoftwareVersion != QApplication::applicationVersion())
+        {
+            ui->pb_Login->setText("Open Link");
+            ui->lbl_LoginResults->setText("Please update to " + GlobalVars::serverSoftwareVersion);
+
+            qDebug()<<" \n\n\n No need to go further, update please. \n\n\n ";
+            QMessageBox msgBox;
+            msgBox.setText("You are using older version of Software. Please update it.");
+            msgBox.exec();
+            needUpdatedSoftware = true;
+            QDesktopServices::openUrl(QUrl("https://m-key.org/"));
+
+            return;
+        }
+
 
         ui->lbl_LoginResults->setText("Login Sucessfull, Credit:" + QString::number(GlobalVars::userInfo_creditDetails, 'f', 2)+",  Version:"+bufferModel.value("Version").toString());
-
         ui->lbl_Credit->setText("Credit: "+QString::number(GlobalVars::userInfo_creditDetails,'f', 1 ));
-
 
         timer_singleShot->start(1000);
         singleShotIndex = 0;
@@ -564,7 +568,10 @@ void MainWindow::rx_newSerialPortDetected(QList<QSerialPortInfo> sInfo)
 
 void MainWindow::rx_ADB_ProcessData(signalStructure sig)
 {
-    if(sig.needtoInsertOutputBox) rx_TextBoxOutput(sig.currentTool, sig.toolIndex, sig.outputString, sig.outputBold, sig.outputNewLine, sig.outputColor);
+    //qDebug()<<"rx_ADB_ProcessData:: needToInsert: "<<sig.needtoInsertOutputBox<<" str: "<<sig.outputString<<" Tool:"<<sig.currentTool;
+
+    if(sig.needtoInsertOutputBox)
+        rx_TextBoxOutput(sig.currentTool, sig.toolIndex, sig.outputString, sig.outputBold, sig.outputNewLine, sig.outputColor);
 
     ui->processProgress->setValue(sig.progressBarValue);
     if(sig.progressBarValue > 30 && sig.progressBarValue < 60) {
@@ -591,7 +598,7 @@ void MainWindow::rx_ADB_ProcessData(signalStructure sig)
 void MainWindow::rx_TextBoxOutput(TOOL_TYPE tool, int idx, QString s, bool isBold, bool newline, QColor color)
 {
     //qDebug()<<"rx_TextBoxOutput Tool:"<<tool<<" idx:"<<idx<<" QString:"<<s<<" isBold:"<<isBold<<" NewLine:"<<newline<<" Color:"<<color;
-    return;
+
     if(tool == Tool_MTK){
         switch (idx) {
         case 0:{
@@ -660,7 +667,8 @@ void MainWindow::rx_TextBoxOutput(TOOL_TYPE tool, int idx, QString s, bool isBol
         }
         }
     }
-    else if(tool==Tool_SPD || tool==Tool_UnLock|| tool==Tool_SPD_FRP_FastBoot){
+    else if(tool==Tool_SPD || tool==Tool_UnLock || tool==Tool_SPD_FRP_FastBoot){
+        //qDebug()<<"rx_TextBoxOutput Tool:"<<tool<<" idx:"<<idx<<" QString:"<<s;
         if(newline) ui->txt_outPut_SPD->append("\n");
         ui->txt_outPut_SPD->setTextColor(color);
         if(isBold) ui->txt_outPut_SPD->setFontWeight(QFont::Bold);
@@ -671,7 +679,6 @@ void MainWindow::rx_TextBoxOutput(TOOL_TYPE tool, int idx, QString s, bool isBol
 }
 void MainWindow::rx_miscOperations(TOOL_TYPE tool, int idx, int value, QString str)
 {
-    return;
     if(idx == 1){
         ui->processProgress->setValue(value);
         if(value > 30 && value < 60) {

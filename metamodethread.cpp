@@ -64,6 +64,73 @@ void MetaModeThread::rx_StartRepairing_metaMode(int idx, bool startStop, TOOL_TY
             emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Start process Unlock: OK", false, false, GlobalVars::txtOutPutColor);
         }
         else if(currentToolType == Tool_META_CarrierFix){
+
+
+
+            QByteArray postdata;
+            QJsonObject obj;
+            obj["OperationName"] = "CarrierFix";
+            obj["DeviceName"] = GlobalVars::meta_modelStr[generalIndex];
+            QJsonDocument doc(obj);
+            postdata = doc.toJson();
+            //qDebug()<<" \n\n ByteArray:"<<postdata<<" Base64::"<<postdata.toBase64();
+            if(processStartStop ==  false){ return; }
+            QEventLoop loop;
+            QNetworkAccessManager nam;
+            QNetworkRequest req;
+            req.setUrl(QUrl(GlobalVars::api_MTKcharges));
+            req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+            req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
+
+            QNetworkReply *reply = nam.post(req, postdata.toBase64());
+            connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+            loop.exec();
+            if(processStartStop ==  false){
+                return;
+            }
+            QByteArray buffer = reply->readAll();
+            //qDebug()<<" reply:: "<<buffer;
+            authenReply = QByteArray::fromBase64(buffer);
+            reply->deleteLater();
+            qDebug()<<"\n\n\n CarrierFix response_data::"<<authenReply;
+            qDebug()<<"\n\n";
+
+            QJsonDocument document = QJsonDocument::fromJson(authenReply);
+            QJsonObject jsonBuffer = document.object();
+
+            qDebug()<<"Server Authentication reply:: "<<jsonBuffer;
+            qDebug()<<" isError: "<<jsonBuffer.value("isError");
+            qDebug()<<" IsError: "<<jsonBuffer.value("IsError");
+            qDebug()<<" Model: "<<jsonBuffer.value("Model");
+            qDebug()<<" Message: "<<jsonBuffer.value("Message");
+            qDebug()<<"\n\n ";
+
+
+            if(jsonBuffer.contains("isError")){
+                if (jsonBuffer.value("isError").toBool() == false)
+                {
+                    QJsonValue buffer1 = jsonBuffer.value("Model");
+                    //qDebug()<<" QJsonValue Model: "<<buffer1;
+                    QJsonObject bufferModel = buffer1.toObject();
+                    GlobalVars::operationID = bufferModel.value("OperationId").toDouble();
+                    GlobalVars::userInfo_creditDetails = bufferModel.value("Credit").toDouble();
+                    qDebug()<<" operationID : "<<GlobalVars::operationID;
+                    qDebug()<<"\n\n ";
+                    emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, QString("OperationID: "+QString::number(GlobalVars::operationID, 'f', 0)), false, false, GlobalVars::txtOutPutColor);
+                }
+            } else if(jsonBuffer.contains("IsError")) {
+                if (jsonBuffer.value("IsError").toBool() == true)
+                {
+                    qDebug()<<"Error Message: "<<jsonBuffer.value("Message");
+                    emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Server Process Failed", true, false, QColor::fromRgb(255, 192, 192));
+                    emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, QString("Error Msg:"+jsonBuffer.value("Message").toString()), true, false, QColor::fromRgb(255, 192, 192));
+
+                    emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
+                    return;
+                }
+            }
+
+
                                  //MMM.exe -k 4 -odm1 ontim -project bj -m user -t write_country_code retbr_retbr -reboot -skipMD
             commandStr = QString("MMM.exe -k "+GlobalVars::meta_serialPortName[generalIndex]+" -odm1 ontim -project "+GlobalVars::meta_projectName[generalIndex] +" -m user -t write_country_code retbr_retbr -reboot -skipMD");
             qDebug()<<" Serial Port: "<<GlobalVars::meta_serialPortName;
@@ -119,9 +186,7 @@ void MetaModeThread::rx_CommandLine_ErrorReceived()
 void MetaModeThread::rx_CommandLine_OutPutReceived()
 {
 
-    if(processStartStop ==  false){
-        return;
-    }
+    if(processStartStop ==  false){ return; }
 
     commandlineOutPut = metaProcess->readAllStandardOutput();
     //if(showTheConsole)
@@ -148,68 +213,6 @@ void MetaModeThread::check_CarrierFix_Cmd_outPut(QString str)
 
     if(str.contains("Motorola Modem Meta Tool Passed."))
     {
-
-        QByteArray postdata;
-
-        QJsonObject obj;
-        obj["OperationName"] = "CarrierFix";
-        obj["DeviceName"] = GlobalVars::meta_modelStr[generalIndex];
-        QJsonDocument doc(obj);
-        postdata = doc.toJson();
-        //qDebug()<<" \n\n ByteArray:"<<postdata<<" Base64::"<<postdata.toBase64();
-        if(processStartStop ==  false){
-            return;
-        }
-        QEventLoop loop;
-        QNetworkAccessManager nam;
-        QNetworkRequest req;
-        req.setUrl(QUrl(GlobalVars::api_MTKcharges));
-        req.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-        req.setRawHeader(QByteArray("Authorization"), GlobalVars::authorizedToken.toUtf8());
-
-        QNetworkReply *reply = nam.post(req, postdata.toBase64());
-        connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-        loop.exec();
-        if(processStartStop ==  false){
-            return;
-        }
-        QByteArray buffer = reply->readAll();
-        //qDebug()<<" reply:: "<<buffer;
-        authenReply = QByteArray::fromBase64(buffer);
-        reply->deleteLater();
-        qDebug()<<"\n\n\n CarrierFix response_data::"<<authenReply;
-        qDebug()<<"\n\n";
-
-        QJsonDocument document = QJsonDocument::fromJson(authenReply);
-        QJsonObject jsonBuffer = document.object();
-
-        //qDebug()<<"Server Authentication reply:: "<<jsonBuffer;
-        qDebug()<<" isError: "<<jsonBuffer.value("isError");
-        qDebug()<<" Model: "<<jsonBuffer.value("Model");
-        qDebug()<<" Message: "<<jsonBuffer.value("Message");
-        qDebug()<<"\n\n ";
-
-
-
-        if (jsonBuffer.value("isError").toBool() == false)
-        {
-            QJsonValue buffer1 = jsonBuffer.value("Model");
-            //qDebug()<<" QJsonValue Model: "<<buffer1;
-            QJsonObject bufferModel = buffer1.toObject();
-            GlobalVars::operationID = bufferModel.value("OperationId").toDouble();
-            GlobalVars::userInfo_creditDetails = bufferModel.value("Credit").toDouble();
-            qDebug()<<" operationID : "<<GlobalVars::operationID;
-            qDebug()<<"\n\n ";
-            emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, QString("OperationID: "+QString::number(GlobalVars::operationID, 'f', 0)), false, false, GlobalVars::txtOutPutColor);
-        }
-        if (jsonBuffer.value("isError").toBool() == true)
-        {
-            qDebug()<<"Error Message: "<<jsonBuffer.value("Message");
-            emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
-            emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Server Process Failed", true, false, QColor::fromRgb(255, 192, 192));
-            return;
-        }
-
 
 
         emit tx_TextBoxOutput_metaMode(currentToolType,  generalIndex,"Getting Authorization From Server: OK", false, false , GlobalVars::txtOutPutColor);
@@ -609,33 +612,37 @@ void MetaModeThread::getAuthenticationFromServer(QString strData, QString strIME
 
     //qDebug()<<"Server Authentication reply:: "<<jsonBuffer;
     qDebug()<<" isError: "<<jsonBuffer.value("isError");
+    qDebug()<<" IsError: "<<jsonBuffer.value("IsError");
     qDebug()<<" Model: "<<jsonBuffer.value("Model");
+    qDebug()<<" Message: "<<jsonBuffer.value("Message");
     qDebug()<<"\n\n ";
 
 
+    if(jsonBuffer.contains("isError")) {
+        if (jsonBuffer.value("isError").toBool() == false)
+        {
+            QJsonValue buffer1 = jsonBuffer.value("Model");
+            //qDebug()<<" QJsonValue Model: "<<buffer1;
+            QJsonObject bufferModel = buffer1.toObject();
+            GlobalVars::operationID = bufferModel.value("OperationId").toDouble();
+            //qDebug()<<" OperationId 444 : "<<bufferModel.value("OperationId");
+            authenReply = bufferModel.value("Auth").toString().toUtf8();
+            GlobalVars::userInfo_creditDetails = bufferModel.value("Credit").toDouble();
+            qDebug()<<"\n\n authenReply : "<<authenReply;
+            qDebug()<<" authenticationID : "<<GlobalVars::operationID;
+            qDebug()<<"\n\n ";
+            emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, QString("OperationID: "+QString::number(GlobalVars::operationID, 'f', 0)), false, false, GlobalVars::txtOutPutColor);
+        }
+    }else if(jsonBuffer.contains("IsError")) {
+        if (jsonBuffer.value("IsError").toBool() == true)
+        {
+            qDebug()<<"Error Message: "<<jsonBuffer.value("Message");
+            emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Process Failed", true, false, QColor::fromRgb(255, 192, 192));
+            emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, QString("Error Msg:"+jsonBuffer.value("Message").toString()), true, false, QColor::fromRgb(255, 192, 192));
 
-    if (jsonBuffer.value("isError").toBool() == false)
-    {
-        QJsonValue buffer1 = jsonBuffer.value("Model");
-        //qDebug()<<" QJsonValue Model: "<<buffer1;
-        QJsonObject bufferModel = buffer1.toObject();
-        GlobalVars::operationID = bufferModel.value("OperationId").toDouble();
-        //qDebug()<<" OperationId 444 : "<<bufferModel.value("OperationId");
-        authenReply = bufferModel.value("Auth").toString().toUtf8();
-        GlobalVars::userInfo_creditDetails = bufferModel.value("Credit").toDouble();
-        qDebug()<<"\n\n authenReply : "<<authenReply;
-        qDebug()<<" authenticationID : "<<GlobalVars::operationID;
-        qDebug()<<"\n\n ";
-
-        emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, QString("OperationID: "+QString::number(GlobalVars::operationID, 'f', 0)), false, false, GlobalVars::txtOutPutColor);
-
-    }
-    if (jsonBuffer.value("isError").toBool() == true)
-    {
-        qDebug()<<"Error Message: "<<jsonBuffer.value("Message");
-        emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
-        emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Process Failed", true, false, QColor::fromRgb(255, 192, 192));
-        return;
+            emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
+            return;
+        }
     }
 
     emit tx_miscOperations_metaMode(currentToolType, generalIndex, 60, "");
@@ -686,9 +693,7 @@ bool MetaModeThread::getServerIMEInumber_updateGlobal()
         QByteArray buffer = reply->readAll();
         //qDebug()<<" reply:: "<<buffer;
         reply->deleteLater();
-        if(processStartStop ==  false){
-            return false;
-        }
+        if(processStartStop ==  false){ return false; }
         buffer = QByteArray::fromBase64(buffer);
         //qDebug()<<"\n\n\n IMEI response_data::"<<buffer;
         //qDebug()<<"\n\n";

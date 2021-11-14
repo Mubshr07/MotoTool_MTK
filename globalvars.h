@@ -65,7 +65,8 @@ enum ADB_Commands{
 #include <QCryptographicHash>
 #include <QByteArray>
 #include <QRegularExpressionValidator>
-//#include <QRegExpValidator>
+
+#include <QDesktopServices>
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -130,6 +131,7 @@ public:
     static QColor txtOutPutColor;
 
     static QString authorizedToken;
+    static QString serverSoftwareVersion;
     static float userInfo_creditDetails;
     static QString userInfo_HardwareKey;
     static QString userInfo_UserName;

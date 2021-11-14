@@ -17,11 +17,8 @@ int main(int argc, char *argv[])
     qRegisterMetaType<signalStructure>();
 
 
-
-
-
-
-
+    // setting Software Version
+    a.setApplicationVersion("0.0.3");
 
 
     QString fullStyleSheetData="";

@@ -52,6 +52,9 @@ QString GlobalVars::api_VersionQString = QString("https://portal.m-key.org/api/v
 QString GlobalVars::api_LogQString = QString("https://portal.m-key.org/api/log");
 QString GlobalVars::api_PerformQString = QString("https://portal.m-key.org/api/perform");
 
+QString GlobalVars::serverSoftwareVersion = "";
+
+
 
 GlobalVars::GlobalVars()
 {

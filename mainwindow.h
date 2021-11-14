@@ -206,7 +206,7 @@ private:
     void saveNewSettings();
     bool rememberMyCredentials = false;
 
-
+    bool needUpdatedSoftware = false;
 
 
 };

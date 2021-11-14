@@ -73,7 +73,7 @@ private:
     bool showThisinDebug = false;
     bool adb_InfoOnly = false;
     bool actualADBcommands = false;
-    MMM_Commands currentCommand[8] = {MMM_Idle,MMM_Idle,MMM_Idle,MMM_Idle,MMM_Idle,MMM_Idle,MMM_Idle,MMM_Idle};
+
     //TOOL_TYPE currentToolType = Tool_MTK;
     ADB_Commands currentADB = ADB_Idle;
 
@@ -113,8 +113,9 @@ private:
     void getADB_UnLockSIMTool(QByteArray ba);
     bool nowForSecondIMEI = false;
     bool fastbootEraseDone = false;
+    bool fastbootRebootingDone = false;
     bool fastBootPushCommandDone = false;
-    bool sendOperationDetailsToServerToReduceCredit();
+    ADB_Commands sendOperationDetailsToServerToReduceCredit();
 
 
 };

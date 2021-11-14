@@ -350,6 +350,22 @@ padding-bottom:0px; </string>
            </layout>
           </widget>
          </item>
+         <item>
+          <widget class="QLabel" name="lbl_Version">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -414,7 +430,7 @@ border-radius:10px;
             <string notr="true">font: 800 18pt &quot;Comic Sans MS&quot;;</string>
            </property>
            <property name="text">
-            <string>Welcome to Moto Tool</string>
+            <string>Welcome to MotoTool</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -501,7 +517,7 @@ padding-bottom:0px; </string>
            </property>
            <property name="styleSheet">
             <string notr="true">color:  rgb(255, 153, 0);
-font:500 12pt &quot;MS Shell Dlg 2&quot;;</string>
+font:500 12pt   &quot;Microsoft Sans Serif&quot;;</string>
            </property>
            <property name="text">
             <string>Credit: 0.0</string>
