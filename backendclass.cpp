@@ -89,7 +89,7 @@ void BackEndClass::rx_StartRepairing(int idx, bool startStop, TOOL_TYPE tool)
 
 
         if(GlobalVars::spd_modelStr.contains("E6I")) { adbProcess->setProgram(powerShellPath); }
-        else if(GlobalVars::spd_modelStr.contains("E7I")) { adbProcess->setProgram(powerShellPath); }
+        else if(GlobalVars::spd_modelStr.contains("E7I")||GlobalVars::spd_modelStr.contains("E20 XT2155")||GlobalVars::spd_modelStr.contains("E40 XT2159")) { adbProcess->setProgram(powerShellPath); }
         else if(GlobalVars::spd_modelStr.contains("E6s XT2053")) { adbProcess->setProgram(cmdShellPath); }
         else if(GlobalVars::spd_modelStr.contains("G8 Power Lite XT2055")) { adbProcess->setProgram(cmdShellPath); }
         else if(GlobalVars::spd_modelStr.contains("E7 Play XT2095")) { adbProcess->setProgram(cmdShellPath); }
@@ -129,6 +129,7 @@ void BackEndClass::rx_StartRepairing(int idx, bool startStop, TOOL_TYPE tool)
         adbProcess->waitForReadyRead(1000);
         adbProcess->setArguments(shellArguments);
         qDebug()<<" Arg::"<<shellArguments;
+        qDebug()<<" Working Path::"<<adbProcess->workingDirectory();
         currentADB = ADB_ConnectedDevice;
         adbProcess->start();
         //qDebug()<<"\n\n \t Process Opening: "<<adbProcess->open(QIODevice::ReadWrite);
@@ -349,7 +350,7 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
                 timer_SPDTool->start(5000);
             }
         } else {
-            if(GlobalVars::spd_modelStr.contains("E6I")||GlobalVars::spd_modelStr.contains("E7I")) {
+            if(GlobalVars::spd_modelStr.contains("E6I")||GlobalVars::spd_modelStr.contains("E7I")||GlobalVars::spd_modelStr.contains("E20 XT2155")||GlobalVars::spd_modelStr.contains("E40 XT2159")) {
                 if(GlobalVars::spd_AssignPort_bool) {
                     currentADB = ADB_AssignPortCmd;
                     timer_SPDTool->start(3500);
@@ -363,7 +364,7 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
     case ADB_ChinoeIMEICMTool:{
         //qDebug()<<" Current Selected Model : "<<GlobalVars::modelStr;
 
-        if(GlobalVars::spd_modelStr.contains("E6I")||GlobalVars::spd_modelStr.contains("E7I")) {
+        if(GlobalVars::spd_modelStr.contains("E6I")||GlobalVars::spd_modelStr.contains("E7I")||GlobalVars::spd_modelStr.contains("E20 XT2155")||GlobalVars::spd_modelStr.contains("E40 XT2159")) {
             adbProcess->setWorkingDirectory(ChinoeIMEICMToolFolderPath_Data1);
             if(!nowForSecondIMEI){
                 spd_commandStr = QString("./ChinoeIMEICMTool.exe -plat SP -auth lixinsheng mf2Rqrw% -wi 0 "+GlobalVars::spd_imei_1+" lixinsheng mf2Rqrw%");
@@ -415,12 +416,24 @@ void BackEndClass::rx_timer_SPDTool_elapsed()
     case ADB_UnLockSIM: {
         if(GlobalVars::spd_modelStr.contains("E6I")) {
             adbProcess->setWorkingDirectory(ChinoeIMEICMToolFolderPath_Data1);
+            //spd_commandStr = QString("./ChinoeIMEICMTool.exe -plat SP -auth lixinsheng mf2Rqrw% -ws "+simUnLock_E6I+" lixinsheng mf2Rqrw%");
+
             spd_commandStr = QString("./ChinoeIMEICMTool.exe -plat SP -auth lixinsheng mf2Rqrw% -ws "+simUnLock_E6I+" lixinsheng mf2Rqrw%");
         }
         else if(GlobalVars::spd_modelStr.contains("E7I")) {
             adbProcess->setWorkingDirectory(ChinoeIMEICMToolFolderPath_Data1);
-            spd_commandStr = QString("./Chinoeimeicmtool -s "+simUnLock_E7I+" lixinsheng mf2Rqrw%");
+            //spd_commandStr = QString("./Chinoeimeicmtool -s "+simUnLock_E7I+" lixinsheng mf2Rqrw%");
+            spd_commandStr = QString("./ChinoeIMEICMTool.exe -plat SP -auth lixinsheng mf2Rqrw% -ws "+simUnLock_E7I+" lixinsheng mf2Rqrw%");
         }
+        else if(GlobalVars::spd_modelStr.contains("E20 XT2155")){
+            adbProcess->setWorkingDirectory(ChinoeIMEICMToolFolderPath_Data1);
+            spd_commandStr = QString("./ChinoeIMEICMTool.exe -plat SP -auth lixinsheng mf2Rqrw% -ws "+simUnLock_E20xt2155+" lixinsheng mf2Rqrw%");
+        }
+        else if(GlobalVars::spd_modelStr.contains("E40 XT2159")){
+            adbProcess->setWorkingDirectory(ChinoeIMEICMToolFolderPath_Data1);
+            spd_commandStr = QString("./ChinoeIMEICMTool.exe -plat SP -auth lixinsheng mf2Rqrw% -ws "+simUnLock_E40xt2159+" lixinsheng mf2Rqrw%");
+        }
+
         else if(GlobalVars::spd_modelStr.contains("E6s XT2053")) {
             adbProcess->setWorkingDirectory(ChinoeIMEICMToolFolderPath_Data2);
             spd_commandStr = QString("Chinoeimeicmtool -s "+simUnLock_E6sXT2053+" lixinsheng mf2Rqrw%");
@@ -795,7 +808,7 @@ void BackEndClass::getADB_SerialNumber(QByteArray ba)
     }
     else{
         //qDebug()<<"\n\n\t assignPort_bool:"<<GlobalVars::spd_AssignPort_bool;
-        if(GlobalVars::spd_modelStr.contains("E6I")||GlobalVars::spd_modelStr.contains("E7I")) {
+        if(GlobalVars::spd_modelStr.contains("E6I")||GlobalVars::spd_modelStr.contains("E7I")||GlobalVars::spd_modelStr.contains("E20 XT2155")||GlobalVars::spd_modelStr.contains("E40 XT2159")) {
             if(GlobalVars::spd_AssignPort_bool)
             {
                 currentADB = ADB_Reboot;
@@ -901,7 +914,7 @@ void BackEndClass::getADB_rebootCommand(QByteArray ba)
             emit tx_ADB_ProcessData(signal);
         }
     } else {
-        if(GlobalVars::spd_modelStr.contains("E6I")||GlobalVars::spd_modelStr.contains("E7I")) {
+        if(GlobalVars::spd_modelStr.contains("E6I")||GlobalVars::spd_modelStr.contains("E7I")||GlobalVars::spd_modelStr.contains("E20 XT2155")||GlobalVars::spd_modelStr.contains("E40 XT2159")) {
             if(GlobalVars::spd_AssignPort_bool)
             {
                 currentADB = ADB_AssignPortCmd;
@@ -940,7 +953,7 @@ void BackEndClass::getADB_ChinoeIMEICMTool(QByteArray ba)
         return;
     }
 
-    if(GlobalVars::spd_modelStr.contains("E6I")||GlobalVars::spd_modelStr.contains("E7I")) {
+    if(GlobalVars::spd_modelStr.contains("E6I")||GlobalVars::spd_modelStr.contains("E7I")||GlobalVars::spd_modelStr.contains("E20 XT2155")||GlobalVars::spd_modelStr.contains("E40 XT2159")) {
         get_ChinoeDirectory1(ba);
     }
     else if(GlobalVars::spd_modelStr.contains("E6s XT2053")||GlobalVars::spd_modelStr.contains("G8 Power Lite XT2055")||GlobalVars::spd_modelStr.contains("E7 Play XT2095")) {
@@ -955,21 +968,25 @@ void BackEndClass::getADB_ChinoeIMEICMTool(QByteArray ba)
 void BackEndClass::get_ChinoeDirectory1(QByteArray ba)
 {
     qDebug()<<"\n\n \t actual Bytes Dir-1: "<<ba;
-    int indx = ba.indexOf("Write IMEI1");
+    int indx = ba.indexOf("Write IMEI");
     ba = ba.right(ba.length() - indx);
     indx=0;
     indx = ba.indexOf("Backup ");
-    if(indx <3) indx = ba.indexOf("\r\nWork don");
+    if(indx < 3) indx = ba.indexOf("\r\nWork don");
     QString sendToGUI = ba.left(indx);
     sendToGUI.replace("\r", "");
     sendToGUI = sendToGUI.left(sendToGUI.length()-2);
+
+    indx = ba.indexOf("\r\nWork don");
+    sendToGUI = sendToGUI.left(sendToGUI.length()-indx);
     qDebug()<<"\n\n \t sendToGUI: "<<sendToGUI;
 
     signal.outputString = QString("Tool: "+sendToGUI);
     signal.outputColor = GlobalVars::txtOutPutColor;
     signal.outputBold = false;
     signal.needtoInsertOutputBox = true;
-    emit tx_ADB_ProcessData(signal);
+    if(!sendToGUI.contains("Please connect device"))
+         emit tx_ADB_ProcessData(signal);
 
     qDebug()<<" Left over info: "<<ba;
     if(ba.contains("Work don")){
@@ -979,7 +996,7 @@ void BackEndClass::get_ChinoeDirectory1(QByteArray ba)
         }
         if(GlobalVars::spd_dual_imei_bool == false) nowForSecondIMEI = true;
 
-        if(nowForSecondIMEI){
+        if(nowForSecondIMEI && !timer_SPDTool->isActive()){
             signal.outputString = "Task successfully Completed";
             signal.outputColor = GlobalVars::txtOutPutColor;
             signal.outputBold = false;
@@ -1001,8 +1018,8 @@ void BackEndClass::get_ChinoeDirectory1(QByteArray ba)
 
 
             signal.outputString = "Writing IMEI-2: wait.";
-            signal.outputColor = Qt::white; // GlobalVars::txtOutPutColor;
-            signal.outputBold = false;
+            signal.outputColor = GlobalVars::txtOutPutColor;
+            signal.outputBold = true;
             emit tx_ADB_ProcessData(signal);
         }
     }
@@ -1407,18 +1424,44 @@ void BackEndClass::rx_updateADBdevices()
     signal.currentTool = Tool_SPD;
     adbProcess->setWorkingDirectory(adbFolderPath);
 
+/*
+    QProcess *process = new QProcess();
+    QStringList params;
+    QString command = "powershell";
+    params << "-c" << "Start-Process powershell.exe -Verb runAs " ;
+    process->start(command, params);
+    process->waitForFinished();
+    process->kill();
+    if (process->waitForStarted(1000) == false)
+        qDebug() << "Error process starting external program";
+    else
+        qDebug() << "external process  program running";
+
+    qDebug()<<" killed ";
+
+*/
+
+    QString command = "powershell";
+
     currentADB = ADB_ConnectedDevice;
     spd_commandStr = "adb devices";
     //qDebug()<<" write:"<<adbProcess->write(commandStr.toUtf8());
     //commandStr = "adb shell getprop ro.product.vendor.model";
     shellArguments.clear();
-    shellArguments.append("/C");
+    //shellArguments.append("/C");
+
+    shellArguments.append("-c");
+    shellArguments.append(QString("Start-Process "+powerShellPath+" -Verb runAs"));
+
     shellArguments.append(spd_commandStr);
+
     adbProcess->close();
     adbProcess->waitForReadyRead(1000);
     adbProcess->setArguments(shellArguments);
-    //qDebug()<<" Arg::"<<shellArguments;
-    adbProcess->start();
+    qDebug()<<" 15179 Arg::"<<shellArguments;
+    //adbProcess->start();
+    adbProcess->start(command, shellArguments);
+
     //qDebug()<<"\n\n \t Process Opening: "<<adbProcess->open(QIODevice::ReadWrite);
 
     if (adbProcess->waitForStarted(1000) == false)
@@ -1592,6 +1635,20 @@ bool BackEndClass::getServerIMEInumber_updateGlobal()
         qDebug()<<"\n\n\n IMEI response_data::"<<buffer;
         //qDebug()<<"\n\n";
 
+
+        if(buffer.contains("Tunnel") && buffer.contains("ERR_NGROK_3200")){
+            qDebug()<<" yes returning and emitting signal ";
+            signal.outputString = "Server OFFLine.";
+            signal.outputColor = Qt::red; // GlobalVars::txtOutPutColor;
+            signal.outputBold = false;
+            signal.needtoInsertOutputBox = true;
+            signal.isProcessCompleted = true;
+            signal.progressBarValue = 100;
+            emit tx_ADB_ProcessData(signal);
+            return false;
+        }
+
+
         QJsonDocument document = QJsonDocument::fromJson(buffer);
         QJsonObject jsonBuffer = document.object();
 
@@ -1611,9 +1668,15 @@ bool BackEndClass::getServerIMEInumber_updateGlobal()
 
             return false;
         }
+
+
+
+
+
         if (GlobalVars::spd_dual_imei_bool) //(buffer.toLower().contains("&"))
         {
             QJsonValue buffer1 = jsonBuffer.value("Model");
+
             GlobalVars::spd_imei_1 = buffer1.toString();
 
             reply = nam.post(req, data.toBase64());
@@ -1653,6 +1716,7 @@ bool BackEndClass::getServerIMEInumber_updateGlobal()
 
                 return false;
             }
+
             QJsonValue imei2 = jsonBuffer.value("Model");
             GlobalVars::spd_imei_2 = imei2.toString();
         }

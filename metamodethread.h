@@ -64,6 +64,14 @@ private:
     QString simUnLock_E7PlayXT2095 = QString(QDir::currentPath() +"/DATA/DATA2/E7simlock/SIMLock.MTK.Guatemala.Tigo.20201014.SIMLock");
     //6. "G20"
     QString simUnLock_G20 = QString(QDir::currentPath() +"/DATA/DATA3/g20simlock/simlock-attmx_region.bin");
+    //7. E20 XT2155
+    QString simUnLock_E20xt2155 = QString(QDir::currentPath() +"/DATA/DATA4/e20xt2155/simlock.bin");
+    //8. E40 XT2159
+    QString simUnLock_E40xt2159 = QString(QDir::currentPath() +"/DATA/DATA4/e40xt2159/simlock.bin");
+
+
+
+
 
     QStringList shellArguments;
     bool processStartStop = false;

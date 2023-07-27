@@ -48,11 +48,13 @@ private:
     QString powerShellPath =  "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe";
     QString cmdShellPath =  "C:/windows/system32/cmd.exe";
     QString m3FolderPath = QString(QDir::currentPath() + "/M3");
-    QString adbFolderPath = QString(QDir::currentPath() + "/ADB");
+    QString adbFolderPath = QString(QDir::currentPath() + "/ADB/");
 
-    QString ChinoeIMEICMToolFolderPath_Data1 = QString(QDir::currentPath() + "/DATA/DATA1");
+    QString ChinoeIMEICMToolFolderPath_Data1 = QString(QDir::currentPath() + "/DATA/DATA1/");
     QString ChinoeIMEICMToolFolderPath_Data2 = QString(QDir::currentPath() + "/DATA/DATA2");
     QString ChinoeIMEICMToolFolderPath_Data3 = QString(QDir::currentPath() + "/DATA/DATA3");
+    QString ChinoeIMEICMToolFolderPath_Data4 = QString(QDir::currentPath() + "/DATA/DATA3");
+
     QString fastBootFolderPath = QString(QDir::currentPath() + "/DATA/fastboot");
 
     //1. "E6I"
@@ -67,6 +69,12 @@ private:
     QString simUnLock_E7PlayXT2095 = QString(QDir::currentPath() +"/DATA/DATA2/E7simlock/SIMLock.MTK.Guatemala.Tigo.20201014.SIMLock");
     //6. "G20"
     QString simUnLock_G20 = QString(QDir::currentPath() +"/DATA/DATA3/g20simlock/simlock-attmx_region.bin");
+    //7. E20 XT2155
+    QString simUnLock_E20xt2155 = QString(QDir::currentPath() +"/DATA/DATA4/e20xt2155/simlock.bin");
+    //8. E40 XT2159
+    QString simUnLock_E40xt2159 = QString(QDir::currentPath() +"/DATA/DATA4/e40xt2159/simlock.bin");
+
+
 
     QStringList shellArguments;
     bool processStartStop = false;

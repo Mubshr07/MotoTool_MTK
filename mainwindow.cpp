@@ -10,8 +10,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     this->setWindowFlags(Qt::FramelessWindowHint);
-    this->setFixedSize(550, 450);
-    //this->setFixedSize(800, 600);
+    //this->setFixedSize(550, 450);
+    this->setFixedSize(800, 600);
 
     logger.rx_initialFileFolders();
 
@@ -25,12 +25,14 @@ MainWindow::MainWindow(QWidget *parent)
     ui->txt_IMEI_D8_1->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]*"))); ui->txt_IMEI_D8_2->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]*"))); ui->txt_IMEI_D8_2->setEnabled(false);
 
 
+    //ui->tabWidget->setTabEnabled(1, false);
+
     GlobalVars::initalizeToZero();
     initializeObjectsAndStartThread();
     ui->cmb_DeviceModel_D1->setCurrentIndex(2);
 
-    ui->processFrame->hide();
-    //ui->loginFrame->hide();
+    //ui->processFrame->hide();
+    ui->loginFrame->hide();
 
     heading = ui->lbl_ProgramHeading;
     heading->setMouseTracking(true);

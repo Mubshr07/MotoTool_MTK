@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>972</width>
-    <height>407</height>
+    <height>410</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -2953,6 +2953,9 @@ font:500 12pt   &quot;Microsoft Sans Serif&quot;;</string>
                <property name="mouseTracking">
                 <bool>false</bool>
                </property>
+               <property name="currentIndex">
+                <number>2</number>
+               </property>
                <item>
                 <property name="text">
                  <string/>
@@ -2986,6 +2989,16 @@ font:500 12pt   &quot;Microsoft Sans Serif&quot;;</string>
                <item>
                 <property name="text">
                  <string>E7 Play XT2095</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>E20 XT2155</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>E40 XT2159</string>
                 </property>
                </item>
               </widget>

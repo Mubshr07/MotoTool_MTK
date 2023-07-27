@@ -164,6 +164,7 @@ void MetaModeThread::rx_StartRepairing_metaMode(int idx, bool startStop, TOOL_TY
 
     }
     if(processStartStop ==  false){
+        if(timer_AppMaxTime->isActive()) timer_AppMaxTime->stop();
         try {
             currentCommand = MMM_Exit;
             metaProcess->close();
@@ -398,7 +399,7 @@ void MetaModeThread::check_UnLock_Cmd_outPut(QString str)
             commandlineOutPut.contains("SP_META_InternalConnectByUSB_r(COM4):CreateFile") || \
             commandlineOutPut.contains("ERROR: <0> SP_META_InternalConnectByUSB_r(COM4)"))
     {
-        emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex,"Comm port is not working properly.", true, false , Qt::red);
+        emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex,"Comm port is not working properly.", true, false , Qt::magenta);
         emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
         currentCommand = MMM_Exit;
         if(timer_Meta_singleShot->isActive()) timer_Meta_singleShot->stop();
@@ -515,6 +516,7 @@ void MetaModeThread::rx_timer_Meta_singleShot()
     }
     case MMM_Exit:{
         currentCommand = MMM_Idle;
+        if(timer_AppMaxTime->isActive()) timer_AppMaxTime->stop();
         if(metaProcess->isWritable()){
             metaProcess->write("exit ");
             metaProcess->write("\n");
@@ -540,7 +542,7 @@ void MetaModeThread::on_timer_AppMaxTime_Elapsed()
     qDebug()<<" @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ";
     qDebug()<<" Process Takes more time then usual so we close this process and exit from cmd. id: "<<generalIndex<<" tool"<<currentToolType;
     qDebug()<<" @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ";
-    emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex,"Comm port is not working properly.", true, false , Qt::red);
+    emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex,"Comm port is not working properly.", true, false , Qt::yellow);
     emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
     currentCommand = MMM_Exit;
     if(timer_Meta_singleShot->isActive()) timer_Meta_singleShot->stop();
@@ -691,12 +693,23 @@ bool MetaModeThread::getServerIMEInumber_updateGlobal()
         emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, QString("Geting IMEI from Server: OK"), false, false, GlobalVars::txtOutPutColor);
 
         QByteArray buffer = reply->readAll();
-        //qDebug()<<" reply:: "<<buffer;
+        //qDebug()<<" \n\n\n ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n reply:: "<<buffer;
+
+
         reply->deleteLater();
         if(processStartStop ==  false){ return false; }
         buffer = QByteArray::fromBase64(buffer);
-        //qDebug()<<"\n\n\n IMEI response_data::"<<buffer;
-        //qDebug()<<"\n\n";
+        qDebug()<<" \n ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n ";
+        qDebug()<<"\n\n\n IMEI response_data::"<<buffer;
+        qDebug()<<"\n\n";
+        qDebug()<<" \n ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n ";
+
+        if(buffer.contains("Tunnel") && buffer.contains("ERR_NGROK_3200")){
+            qDebug()<<" yes returning and emitting signal ";
+            emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
+            emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Server OFFLine.", true, false, QColor::fromRgb(255, 192, 192));
+            return false;
+        }
 
         QJsonDocument document = QJsonDocument::fromJson(buffer);
         QJsonObject jsonBuffer = document.object();
@@ -711,6 +724,19 @@ bool MetaModeThread::getServerIMEInumber_updateGlobal()
             emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Faided to get IMEI-1 from Server", true, false, QColor::fromRgb(255, 192, 192));
             return false;
         }
+        if (jsonBuffer.value("IsError").toBool() == true)
+        {
+            emit tx_miscOperations_metaMode(currentToolType, generalIndex, 100, "");
+            emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, "Faided to get IMEI-1 from Server", true, false, QColor::fromRgb(255, 192, 192));
+
+
+            QJsonValue buffer1 = jsonBuffer.value("Message");
+            QString serverMessage = QString(buffer1.toString());
+            emit tx_TextBoxOutput_metaMode(currentToolType, generalIndex, serverMessage, true, false, QColor::fromRgb(255, 192, 192));
+
+            return false;
+        }
+
         if (GlobalVars::meta_dual_imei_bool[generalIndex]) //(buffer.toLower().contains("&"))
         {
             QJsonValue buffer1 = jsonBuffer.value("Model");
